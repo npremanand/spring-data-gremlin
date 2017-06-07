@@ -91,7 +91,7 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
 
     @Override
     public RuntimeException getForceRetryException() {
-        return new ForceRetryException();
+        return new ForceRetryException("Retry Needed");
     }
 
     @Override
@@ -103,6 +103,14 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
         }
     }
 
-    public class ForceRetryException extends ONeedRetryException { }
+    public class ForceRetryException extends ONeedRetryException {
+        public ForceRetryException(ONeedRetryException exception) {
+            super(exception);
+        }
+
+        public ForceRetryException(String message) {
+            super(message);
+        }
+    }
 }
 
