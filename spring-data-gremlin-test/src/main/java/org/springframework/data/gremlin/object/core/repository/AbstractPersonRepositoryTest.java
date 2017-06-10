@@ -179,6 +179,7 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         }
     }
 
+
     @Test
     public void findSingleByFirstName() {
         Person person = repository.findSingleByFirstName("Jake");
@@ -188,6 +189,26 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         assertEquals(person.getFirstName(), "Jake");
     }
 
+    /*@Test
+    public void findByFirstNameIgnoreCaseLower() {
+        List<Person> result = repository.findByFirstNameIgnoreCase("jake");
+
+        assertFalse(result.isEmpty());
+
+        for (Person person : result) {
+            assertEquals("jake", person.getFirstName().toLowerCase());
+        }
+    }
+    @Test
+    public void findByFirstNameIgnoreCaseUpper() {
+        List<Person> result = repository.findByFirstNameIgnoreCase("JAKE");
+
+        assertFalse(result.isEmpty());
+
+        for (Person person : result) {
+            assertEquals("JAKE", person.getFirstName().toUpperCase());
+        }
+    }*/
     @Test
     public void findSingleMapByFirstName() {
         Map<String, Object> result = repository.findSingleMapByFirstName("Jake");
@@ -214,6 +235,7 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
             assertTrue(person.getLastName().startsWith("We"));
         }
     }
+
 
     @Test
     public void findByFirstNameAndLastName() {

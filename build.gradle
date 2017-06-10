@@ -1,6 +1,9 @@
 buildscript {
     ext {
         springPlatformVersion = '2.0.8.RELEASE'
+        // springPlatformVersion = 'Athens-SR5'
+        // orientDBVersion = '2.2.22-SNAPSHOT'
+        orientDBVersion = '2.2.21'
     }
     repositories {
         maven { url 'http://repo.spring.io/plugins-release' }
@@ -38,11 +41,18 @@ allprojects {
     }
     dependencyManagement {
         imports {
+
             mavenBom "io.spring.platform:platform-bom:$springPlatformVersion"
         }
         dependencies {
             dependency 'org.codehaus.groovy:groovy-jsr223:2.4.11'
             dependency 'org.codehaus.groovy:groovy-all:2.4.11'
+            dependency "com.orientechnologies:orientdb-lucene:$orientDBVersion"
+            dependency "com.orientechnologies:orientdb-graphdb:$orientDBVersion"
+            dependency "com.orientechnologies:orientdb-spatial:$orientDBVersion"
+            dependency 'com.tinkerpop.blueprints:blueprints-core:2.6.0'
+            dependency 'com.tinkerpop.gremlin:gremlin-java:2.6.0'
+            dependency 'com.tinkerpop.gremlin:gremlin-groovy:2.6.0'
         }
     }
     dependencies {
@@ -52,16 +62,15 @@ allprojects {
         compile 'org.springframework.data:spring-data-commons'
         compile 'org.codehaus.groovy:groovy-jsr223'
         compile 'org.codehaus.groovy:groovy-all'
-        compile 'com.tinkerpop.blueprints:blueprints-core:2.6.0'
-        compile 'com.tinkerpop.gremlin:gremlin-java:2.6.0'
-        compile 'com.tinkerpop.gremlin:gremlin-groovy:2.6.0'
+        compile 'com.tinkerpop.blueprints:blueprints-core'
+        compile 'com.tinkerpop.gremlin:gremlin-java'
+        compile 'com.tinkerpop.gremlin:gremlin-groovy'
         compile 'org.apache.commons:commons-collections4:4.0'
         compile 'org.apache.commons:commons-lang3:3.4'
         compile 'org.reflections:reflections:0.9.9-RC1'
         testCompile 'junit:junit:4.12'
         testCompile 'org.mockito:mockito-core:1.10.19'
         testCompile 'org.springframework:spring-test'
-//        testCompile('org.slf4j:slf4j-simple:1.7.7')
     }
 
     task javadocJar(type: Jar) {
