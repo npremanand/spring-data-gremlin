@@ -39,6 +39,7 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
         notNull(password);
 
         ogf = new OrientGraphFactory(getUrl(), getUsername(), getPassword()).setupPool(getMinPoolSize(), getMaxPoolSize());
+		ogf.setAutoStartTx(false);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
 
     @Override
     public RuntimeException getForceRetryException() {
-        return new ForceRetryException();
+        return new ForceRetryException("forced retry");
     }
 
     @Override
@@ -103,6 +104,15 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
         }
     }
 
-    public class ForceRetryException extends ONeedRetryException { }
+    public class ForceRetryException extends ONeedRetryException {
+
+    	protected ForceRetryException(ONeedRetryException exception) {
+			super(exception);
+		}
+
+		protected ForceRetryException(String message) {
+			super(message);
+		}
+	}
 }
 
