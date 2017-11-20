@@ -22,95 +22,90 @@ import static org.springframework.util.Assert.notNull;
  * @author Gman
  */
 public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<OrientGraph> {
+	private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBGremlinGraphFactory.class);
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrientDBGremlinGraphFactory.class);
+	private OrientGraphFactory ogf;
 
-    private OrientGraphFactory ogf;
-
-    public OrientGraphNoTx graphNoTx() {
-        return ogf.getNoTx();
-    }
+	public OrientGraphNoTx graphNoTx() {
+		return ogf.getNoTx();
+	}
 
     @Override
     protected void createPool() {
-
         notNull(url);
         notNull(username);
         notNull(password);
-
         ogf = new OrientGraphFactory(getUrl(), getUsername(), getPassword()).setupPool(getMinPoolSize(), getMaxPoolSize());
-		ogf.setAutoStartTx(false);
-    }
+    	ogf.setAutoStartTx(false);}
 
-    @Override
-    public boolean isActive(OrientGraph graph) {
-        return graph.getRawGraph().getTransaction().isActive();
-    }
+	@Override
+	public boolean isActive(OrientGraph graph) {
+		return graph.getRawGraph().getTransaction().isActive();
+	}
 
-    @Override
-    public boolean isClosed(OrientGraph graph) {
-        return graph.isClosed();
-    }
+	@Override
+	public boolean isClosed(OrientGraph graph) {
+		return graph.isClosed();
+	}
 
-    @Override
-    public void beginTx(OrientGraph graph) {
-        graph.begin();
-    }
+	@Override
+	public void beginTx(OrientGraph graph) {
+		graph.begin();
+	}
 
-    @Override
-    public void commitTx(OrientGraph graph) {
-        graph.commit();
-    }
+	@Override
+	public void commitTx(OrientGraph graph) {
+		graph.commit();
+	}
 
-    @Override
-    public void rollbackTx(OrientGraph graph) {
-        graph.rollback();
-    }
+	@Override
+	public void rollbackTx(OrientGraph graph) {
+		graph.rollback();
+	}
 
-    @Override
-    public OrientGraph openGraph() {
-        return ogf.getTx();
-    }
+	@Override
+	public OrientGraph openGraph() {
+		return ogf.getTx();
+	}
 
-    @Override
-    protected void createGraph() {
-        if (!getUrl().startsWith("remote:")) {
-            ODatabase db = ogf.getDatabase();
-            if (!db.exists()) {
-                db.create();
-                db.close();
-            }
-        } else {
-            LOGGER.warn("Cannot create database on remote connections.");
-        }
-    }
+	@Override
+	protected void createGraph() {
+		if (!getUrl().startsWith("remote:")) {
+			ODatabase db = ogf.getDatabase();
+			if (!db.exists()) {
+				db.create();
+				db.close();
+			}
+		} else {
+			LOGGER.warn("Cannot create database on remote connections.");
+		}
+	}
 
-    @Override
-    public Class<? extends RuntimeException> getRetryException() {
-        return ONeedRetryException.class;
-    }
+	@Override
+	public Class<? extends RuntimeException> getRetryException() {
+		return ONeedRetryException.class;
+	}
 
-    @Override
-    public RuntimeException getForceRetryException() {
-        return new ForceRetryException("forced retry");
-    }
+	@Override
+	public RuntimeException getForceRetryException() {
+		return new ForceRetryException("Retry Needed");
+	}
 
-    @Override
-    public void resumeTx(OrientGraph oldGraph) {
-        try {
-            ODatabaseRecordThreadLocal.INSTANCE.set((ODatabaseDocumentInternal)((ODatabaseInternal)oldGraph.getRawGraph()).getUnderlying());
-        } catch(UnsupportedOperationException  e) {
-            LOGGER.error("Could not :" + e.getMessage());
-        }
-    }
+	@Override
+	public void resumeTx(OrientGraph oldGraph) {
+		try {
+			ODatabaseRecordThreadLocal.INSTANCE.set((ODatabaseDocumentInternal) ((ODatabaseInternal) oldGraph.getRawGraph()).getUnderlying());
+		} catch (UnsupportedOperationException e) {
+			LOGGER.error("Could not :" + e.getMessage());
+		}
+	}
 
-    public class ForceRetryException extends ONeedRetryException {
-
-    	protected ForceRetryException(ONeedRetryException exception) {
+	public class ForceRetryException extends ONeedRetryException {
+		public ForceRetryException(ONeedRetryException exception) {
 			super(exception);
 		}
 
-		protected ForceRetryException(String message) {
+		public ForceRetryException(String message) {
 			super(message);
 		}
 	}

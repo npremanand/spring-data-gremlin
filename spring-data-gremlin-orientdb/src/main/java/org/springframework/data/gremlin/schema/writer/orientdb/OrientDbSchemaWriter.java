@@ -159,11 +159,13 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
 
     @Override
     protected void createNonUniqueIndex(Object prop) {
+        LOGGER.debug("createNonUniqueIndex:{}", prop);
         ((OProperty) prop).createIndex(OClass.INDEX_TYPE.NOTUNIQUE);
     }
 
     @Override
     protected void createUniqueIndex(Object prop) {
+        LOGGER.debug("createUniqueIndex:{}", prop);
         ((OProperty) prop).createIndex(OClass.INDEX_TYPE.UNIQUE);
     }
 
@@ -173,12 +175,19 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
         String indexName = schema.getClassName() + ".lat_lon";
         if (dbf.graphNoTx().getIndex(indexName, Vertex.class) == null) {
             try {
-                dbf.graphNoTx().command(new OCommandSQL(String.format("CREATE INDEX %s ON %s(%s,%s) SPATIAL ENGINE LUCENE", indexName, schema.getClassName(), latitude.getName(), longitude.getName())))
+                final String sql = String.format("CREATE INDEX %s ON %s(%s,%s) SPATIAL ENGINE LUCENE METADATA {ignoreNullValues: true};",
+                        indexName,
+                        schema.getClassName(),
+                        latitude.getName(),
+                        longitude.getName());
+                LOGGER.debug("createSpatialIndex:{}", sql);
+                dbf.graphNoTx().command(new OCommandSQL(sql))
                    .execute();
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
-
+        } else {
+            LOGGER.warn("createSpatialIndex:exists:{}", indexName);
         }
     }
 

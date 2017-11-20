@@ -8,7 +8,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.gremlin.object.core.domain.Person;
 import org.springframework.data.gremlin.object.core.repository.AbstractPersonRepositoryTest;
 import org.springframework.data.gremlin.object.core.repository.NativePersonRepository;
+import org.springframework.data.gremlin.object.core.repository.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
+import scala.Int;
 
 import java.util.Iterator;
 
@@ -18,7 +20,6 @@ import java.util.Iterator;
 @ContextConfiguration(classes = OrientDB_Core_TestConfiguration.class)
 @SuppressWarnings("SpringJavaAutowiringInspection")
 public class OrientDB_Core_PersonRepositoryTest extends AbstractPersonRepositoryTest {
-
     @Autowired
     protected NativePersonRepository nativePersonRepository;
 
@@ -26,7 +27,6 @@ public class OrientDB_Core_PersonRepositoryTest extends AbstractPersonRepository
     public void testDeleteAllExcept() throws Exception {
         int count = nativePersonRepository.deleteAllExceptUser("Lara");
         Assert.assertEquals(4, count);
-
         Iterable<Person> persons = repository.findAll();
         Assert.assertNotNull(persons);
         Iterator<Person> iterator = persons.iterator();
@@ -35,15 +35,25 @@ public class OrientDB_Core_PersonRepositoryTest extends AbstractPersonRepository
         Assert.assertFalse(iterator.hasNext());
     }
 
-
     @Test
     public void findPeopleNear() throws Exception {
         Page<Person> page = nativePersonRepository.findNear(-33, 151, 50, new PageRequest(0, 10));
         Assert.assertEquals(1, page.getTotalElements());
-
         Person person = page.iterator().next();
         Assert.assertNotNull(person);
         Assert.assertEquals("Graham", person.getFirstName());
         Assert.assertNotNull(person.getLocations());
     }
+
+    @Test
+    public void findEscapeString() throws Exception {
+        Person person = nativePersonRepository.findOneByName("John St'");
+        Assert.assertNull(person);
+    }
+    @Test
+    public void deleteAllEscapeString() throws Exception {
+        int deleted = nativePersonRepository.deleteAllExceptUser("John St'");
+        Assert.assertNotEquals(0, deleted);
+    }
+
 }
