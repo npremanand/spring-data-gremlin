@@ -59,8 +59,8 @@ public abstract class GremlinSchema<V> {
     private GremlinAdjacentProperty outProperty;
     private GremlinAdjacentProperty inProperty;
 
-    private Map<String, GremlinProperty> propertyMap = new HashMap<>();
-    private Map<String, GremlinProperty> fieldToPropertyMap = new HashMap<>();
+    private Map<String, GremlinProperty> propertyMap = new HashMap<String, GremlinProperty>();
+    private Map<String, GremlinProperty> fieldToPropertyMap = new HashMap<String, GremlinProperty>();
     private Multimap<Class<?>, GremlinProperty> typePropertyMap = LinkedListMultimap.create();
 
     private Set<GremlinProperty> properties = new HashSet<>();
@@ -189,7 +189,7 @@ public abstract class GremlinSchema<V> {
     }
 
     public void copyToGraph(GremlinGraphAdapter graphAdapter, Element element, Object obj) {
-        cascadeCopyToGraph(graphAdapter, element, obj, new HashMap<>());
+        cascadeCopyToGraph(graphAdapter, element, obj, new HashMap<Object, Element>());
     }
 
     public void cascadeCopyToGraph(GremlinGraphAdapter graphAdapter, Element element, final Object obj, Map<Object, Element> noCascadingMap) {

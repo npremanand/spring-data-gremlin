@@ -8,6 +8,7 @@ import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.util.Pipeline;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -55,6 +56,11 @@ public abstract class BaseRepositoryTest {
 
     @Autowired
     protected TestService testService;
+
+    @BeforeClass
+    public static void setup() {
+        System.setProperty("blueprints.orientdb.autoStartTx", "false");
+    }
 
     @Before
     public void before() {
