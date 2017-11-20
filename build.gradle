@@ -1,9 +1,8 @@
 buildscript {
     ext {
-        springPlatformVersion = '4.3.8.RELEASE'
-        // springPlatformVersion = 'Athens-SR5'
-        // orientDBVersion = '2.2.22-SNAPSHOT'
-        orientDBVersion = '2.2.29'
+		springPlatformVersion = '2.0.8.RELEASE'
+		// springPlatformVersion = 'Brussels-SR5'
+		orientDBVersion = '2.2.29'
     }
     repositories {
         maven { url 'http://repo.spring.io/plugins-release' }
