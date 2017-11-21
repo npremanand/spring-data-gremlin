@@ -28,7 +28,7 @@ allprojects {
     apply plugin: 'propdeps-eclipse'
     apply plugin: 'io.spring.dependency-management'
 
-    sourceCompatibility = 1.7
+    sourceCompatibility = 1.8
     version = '1.0.0-SNAPSHOT'
     group = 'org.springframework.data'
 
