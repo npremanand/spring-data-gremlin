@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 import static org.springframework.data.gremlin.annotation.Enumerated.EnumeratedType.STRING;
 
@@ -241,7 +240,7 @@ public class Person extends Bipod<Area> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || !(o instanceof Person)) {
             return false;
         }
 

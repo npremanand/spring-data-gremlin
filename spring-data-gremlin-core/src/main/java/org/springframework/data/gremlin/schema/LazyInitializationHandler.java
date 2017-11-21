@@ -2,7 +2,7 @@ package org.springframework.data.gremlin.schema;
 
 import com.tinkerpop.blueprints.Element;
 import javassist.util.proxy.MethodHandler;
-import org.apache.commons.lang3.concurrent.ConcurrentException;
+import javassist.util.proxy.ProxyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:atul.mahind@kiwigrid.com">Atul Mahind</a>
  */
-class LazyInitializationHandler implements MethodHandler {
+public class LazyInitializationHandler implements MethodHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LazyInitializationHandler.class);
 
@@ -36,20 +36,23 @@ class LazyInitializationHandler implements MethodHandler {
     @Override
     public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
         LOGGER.trace("Invoke {}", thisMethod);
-        if (args.length == 0
-                && (thisMethod.getName().equals("hashCode") || thisMethod.getName().equals("finalize"))
-                && thisMethod.getDeclaringClass() == Object.class) {
-            return element.getId().hashCode();
-        } else if (args.length == 1
-                && thisMethod.getName().equals("equals")
-                && thisMethod.getDeclaringClass() == Object.class) {
-            return args[0] == self;
+        if (thisMethod.getDeclaringClass() == Object.class) {
+            if (args.length == 0) {
+                if (thisMethod.getName().equals("hashCode")) {
+                    return System.identityHashCode(self);
+                }
+                if (thisMethod.getName().equals("finalize")) {
+                    return proceed.invoke(self, args);
+                }
+            } else if (args.length == 1 && thisMethod.getName().equals("equals")) {
+                return args[0] == self;
+            }
         }
         init(self);
         return proceed.invoke(self, args);
     }
 
-    private void init(Object self) throws ConcurrentException {
+    private void init(Object self) {
         if (!initialized) {
             synchronized (this) {
                 if (!initialized) {
@@ -61,7 +64,7 @@ class LazyInitializationHandler implements MethodHandler {
     }
 
     @SuppressWarnings("unchecked")
-    private void initialize(Object self) throws ConcurrentException {
+    private void initialize(Object self) {
         LOGGER.debug("Init proxy of {}:{}", schema.getClassName(), element.getId());
         try {
             GremlinPropertyAccessor idAccessor = schema.getIdAccessor();
@@ -80,5 +83,24 @@ class LazyInitializationHandler implements MethodHandler {
             }
         }
         LOGGER.debug("Finished proxy initialization of {}:{}", schema.getClassName(), element.getId());
+    }
+
+    public static void initProxy(Object object) {
+        if (object instanceof ProxyObject) {
+            MethodHandler handler = ((ProxyObject) object).getHandler();
+            if (handler instanceof LazyInitializationHandler) {
+                ((LazyInitializationHandler) handler).init(object);
+            }
+        }
+    }
+
+    public static boolean isInitialized(Object object) {
+        if (object instanceof ProxyObject) {
+            MethodHandler handler = ((ProxyObject) object).getHandler();
+            if (handler instanceof LazyInitializationHandler) {
+                return ((LazyInitializationHandler) handler).initialized;
+            }
+        }
+        return true;
     }
 }

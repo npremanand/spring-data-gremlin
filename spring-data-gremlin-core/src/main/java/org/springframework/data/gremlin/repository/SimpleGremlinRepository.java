@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gremlin.schema.GremlinEdgeSchema;
 import org.springframework.data.gremlin.schema.GremlinSchema;
+import org.springframework.data.gremlin.schema.LazyInitializationHandler;
 import org.springframework.data.gremlin.schema.property.GremlinAdjacentProperty;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.stereotype.Repository;
@@ -62,7 +63,6 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
     //        return element;
     //    }
 
-    @Transactional(readOnly = false)
     private Element create(Graph graph, final T object, Object... noCascade) {
         Element element;
         if (schema.isVertexSchema()) {
@@ -133,6 +133,9 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
 
         String id = schema.getObjectId(s);
         if (graphAdapter.isValidId(id)) {
+            if (!LazyInitializationHandler.isInitialized(s)) {
+                return s;
+            }
             save(graph, s, noCascade);
         } else {
             create(graph, s, noCascade);

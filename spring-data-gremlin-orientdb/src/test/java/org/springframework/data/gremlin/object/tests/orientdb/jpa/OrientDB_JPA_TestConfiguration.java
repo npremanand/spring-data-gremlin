@@ -28,8 +28,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class OrientDB_JPA_TestConfiguration {
 
     @Bean
-    public OrientDBGremlinGraphFactory factory() {
-        OrientDBGremlinGraphFactory factory = new OrientDBGremlinGraphFactory();
+    public GremlinGraphFactory factory() {
+        GremlinGraphFactory factory = new OrientDBGremlinGraphFactory();
         factory.setUrl("memory:spring-data-orientdb-jpa");
         factory.setUsername("admin");
         factory.setPassword("admin");

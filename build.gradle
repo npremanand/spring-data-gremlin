@@ -55,6 +55,7 @@ allprojects {
         }
     }
     dependencies {
+        compile 'javax.inject:javax.inject:1@jar'
         compile 'org.springframework:spring-beans'
         compile 'org.springframework:spring-context'
         compile 'org.springframework:spring-tx'

@@ -1,7 +1,5 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
-import org.springframework.data.gremlin.annotation.Edge;
-import org.springframework.data.gremlin.annotation.Id;
 import org.springframework.data.neo4j.annotation.EndNode;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
@@ -52,7 +50,7 @@ public class Likes {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || !(o instanceof Likes)) {
             return false;
         }
 

@@ -1,7 +1,6 @@
 package org.springframework.data.gremlin.schema.property.accessor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.data.gremlin.schema.LazyInitializationHandler;
 
 import java.lang.reflect.Field;
 
@@ -11,8 +10,6 @@ import java.lang.reflect.Field;
  * @author Gman
  */
 public class GremlinFieldPropertyAccessor<V> extends AbstractGremlinFieldPropertyAccessor<V> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GremlinFieldPropertyAccessor.class);
 
     public GremlinFieldPropertyAccessor(Field field) {
         super(field);
@@ -25,7 +22,7 @@ public class GremlinFieldPropertyAccessor<V> extends AbstractGremlinFieldPropert
     @Override
     public V get(Object object) {
         try {
-
+            LazyInitializationHandler.initProxy(object);
             object = getEmbeddedObject(object, false);
             V result = null;
             if (object != null) {
@@ -52,10 +49,9 @@ public class GremlinFieldPropertyAccessor<V> extends AbstractGremlinFieldPropert
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("GremlinFieldPropertyAccessor{");
-        sb.append("field=").append(field);
-        sb.append(", embeddedAccessor=").append(embeddedAccessor);
-        sb.append('}');
-        return sb.toString();
+        return "GremlinFieldPropertyAccessor{"
+                + "field=" + field
+                + ", embeddedAccessor=" + embeddedAccessor +
+                '}';
     }
 }
