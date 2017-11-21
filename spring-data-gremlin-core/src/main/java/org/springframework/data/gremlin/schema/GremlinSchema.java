@@ -18,10 +18,10 @@ import org.springframework.data.gremlin.schema.property.accessor.GremlinProperty
 import org.springframework.data.gremlin.schema.property.encoder.GremlinPropertyEncoder;
 import org.springframework.data.gremlin.schema.property.mapper.GremlinPropertyMapper;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
-import org.springframework.data.gremlin.utils.GenericsUtil;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -39,17 +39,17 @@ public abstract class GremlinSchema<V> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GremlinSchema.class);
 
-    public GremlinSchema(Class<V> classType) {
+    public GremlinSchema(Class<V> classType, GremlinSchema<? super V> superSchema) {
         this.classType = classType;
+        this.superSchema = superSchema;
+        this.isAbstract = Modifier.isAbstract(classType.getModifiers());
     }
 
-    public GremlinSchema() {
-        //noinspection unchecked
-        classType = (Class<V>) GenericsUtil.getGenericType(this.getClass());
-    }
+    private final Class<V> classType;
+    private final GremlinSchema<? super V> superSchema;
+    private boolean isAbstract;
 
     private String className;
-    private Class<V> classType;
     private GremlinRepository<V> repository;
     private GremlinGraphFactory graphFactory;
     private GremlinIdPropertyAccessor idAccessor;
@@ -59,8 +59,8 @@ public abstract class GremlinSchema<V> {
     private GremlinAdjacentProperty outProperty;
     private GremlinAdjacentProperty inProperty;
 
-    private Map<String, GremlinProperty> propertyMap = new HashMap<String, GremlinProperty>();
-    private Map<String, GremlinProperty> fieldToPropertyMap = new HashMap<String, GremlinProperty>();
+    private Map<String, GremlinProperty> propertyMap = new HashMap<>();
+    private Map<String, GremlinProperty> fieldToPropertyMap = new HashMap<>();
     private Multimap<Class<?>, GremlinProperty> typePropertyMap = LinkedListMultimap.create();
 
     private Set<GremlinProperty> properties = new HashSet<>();
@@ -121,7 +121,9 @@ public abstract class GremlinSchema<V> {
     }
 
     public GremlinIdPropertyAccessor getIdAccessor() {
-        return idAccessor;
+        if (idAccessor == null && superSchema != null) {
+            return superSchema.getIdAccessor();
+        } else return idAccessor;
     }
 
     public void setIdAccessor(GremlinIdPropertyAccessor idAccessor) {
@@ -150,10 +152,6 @@ public abstract class GremlinSchema<V> {
 
     public Class<V> getClassType() {
         return classType;
-    }
-
-    public void setClassType(Class<V> classType) {
-        this.classType = classType;
     }
 
     public GremlinProperty getProperty(String property) {
@@ -189,7 +187,7 @@ public abstract class GremlinSchema<V> {
     }
 
     public void copyToGraph(GremlinGraphAdapter graphAdapter, Element element, Object obj) {
-        cascadeCopyToGraph(graphAdapter, element, obj, new HashMap<Object, Element>());
+        cascadeCopyToGraph(graphAdapter, element, obj, new HashMap<>());
     }
 
     public void cascadeCopyToGraph(GremlinGraphAdapter graphAdapter, Element element, final Object obj, Map<Object, Element> noCascadingMap) {
@@ -251,6 +249,7 @@ public abstract class GremlinSchema<V> {
             obj = proxyClass.newInstance();
             noCascadingMap.put(element.getId(), obj);
             ((Proxy) obj).setHandler(new LazyInitializationHandler(this, graphAdapter, element, noCascadingMap));
+            setObjectId(obj, element);
             return obj;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Could not instantiate new " + getClassType(), e);
@@ -293,11 +292,38 @@ public abstract class GremlinSchema<V> {
         return id;
     }
 
+    public GremlinSchema<?> getSuperSchema() {
+        return superSchema;
+    }
+
+    public boolean isAbstract() {
+        return isAbstract;
+    }
+
+    public void setAbstract(boolean isAbstract) {
+        this.isAbstract = isAbstract;
+    }
+
     @Override
     public String toString() {
         return "GremlinSchema{"
                 + "className='" + className + '\''
                 + ", classType=" + classType +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GremlinSchema<?> that = (GremlinSchema<?>) o;
+
+        return classType.equals(that.classType);
+    }
+
+    @Override
+    public int hashCode() {
+        return classType.hashCode();
     }
 }

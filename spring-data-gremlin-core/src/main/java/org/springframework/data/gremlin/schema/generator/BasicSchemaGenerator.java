@@ -39,6 +39,7 @@ public class BasicSchemaGenerator implements SchemaGenerator {
     private Set<Class<?>> edgeClasses;
     private GremlinPropertyFactory propertyFactory;
     private GremlinPropertyEncoder idEncoder;
+    private Map<Class<?>, GremlinSchema<?>> schemaMap = new HashMap<>();
 
     public BasicSchemaGenerator() {
         this(null, new GremlinPropertyFactory(), null);
@@ -72,22 +73,36 @@ public class BasicSchemaGenerator implements SchemaGenerator {
      */
 
     public <V> GremlinSchema<V> generateSchema(Class<V> clazz) throws SchemaGeneratorException {
+        //noinspection unchecked
+        GremlinSchema<V> schema = (GremlinSchema<V>) schemaMap.get(clazz);
+        if (schema != null) {
+            return schema;
+        }
+        Class<? super V> superClass = clazz.getSuperclass();
+        GremlinSchema<? super V> superSchema = null;
+        if (superClass != Object.class && (isVertexClass(superClass) || isEdgeClass(superClass))) {
+            superSchema = generateSchema(superClass);
+        }
         String className = getVertexName(clazz);
 
-        Field field = getIdField(clazz);
-        GremlinIdFieldPropertyAccessor idAccessor = new GremlinIdFieldPropertyAccessor(field);
-
-        GremlinSchema<V> schema = createSchema(clazz);
+        schema = createSchema(clazz, superSchema);
         schema.setClassName(className);
-        schema.setClassType(clazz);
-        schema.setIdAccessor(idAccessor);
         schema.setIdEncoder(idEncoder);
+
+        Field idField = getIdField(clazz);
+        if (idField == null) {
+            schema.setAbstract(true);
+        } else {
+            GremlinIdFieldPropertyAccessor idAccessor = new GremlinIdFieldPropertyAccessor(idField);
+            schema.setIdAccessor(idAccessor);
+        }
 
         // Generate the Schema for clazz with all of it's super classes.
         populate(clazz, schema);
-        if (schema.isVertexSchema() && schema.getIdAccessor() == null) {
-            throw new SchemaGeneratorException("Could not generate Schema for " + clazz.getSimpleName() + ". No @Id field found.");
+        if (schema.isVertexSchema() && schema.getIdAccessor() == null && !schema.isAbstract()) {
+            throw new SchemaGeneratorException("Could not generate Schema for " + clazz.getSimpleName() + ". No @Id idField found.");
         }
+        schemaMap.put(clazz, schema);
         return schema;
     }
 
@@ -97,7 +112,7 @@ public class BasicSchemaGenerator implements SchemaGenerator {
         if (mapType.isInterface()) {
             mapType = HashMap.class;
         }
-        GremlinDynamicSchema<V> schema = new GremlinDynamicSchema(mapType);
+        GremlinDynamicSchema<V> schema = new GremlinDynamicSchema(mapType, null);
         schema.setClassName(className);
         schema.setIdAccessor(idAccessor);
         schema.setIdEncoder(idEncoder);
@@ -114,11 +129,11 @@ public class BasicSchemaGenerator implements SchemaGenerator {
         populate(clazz, schema, null);
     }
 
-    private <V> GremlinSchema<V> createSchema(Class<V> clazz) {
+    private <V> GremlinSchema<V> createSchema(Class<V> clazz, GremlinSchema<? super V> superSchema) {
         if (isVertexClass(clazz)) {
-            return new GremlinVertexSchema<>(clazz);
+            return new GremlinVertexSchema<>(clazz, superSchema);
         } else if (isEdgeClass(clazz)) {
-            return new GremlinEdgeSchema<>(clazz);
+            return new GremlinEdgeSchema<>(clazz, superSchema);
         } else {
             throw new IllegalArgumentException(clazz + " cannot be classes as a VERTEX or EDGE!");
         }
@@ -133,12 +148,13 @@ public class BasicSchemaGenerator implements SchemaGenerator {
 
         ReflectionUtils.doWithFields(clazz, new ReflectionUtils.FieldCallback() {
             @Override
-            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {BasicSchemaGenerator.this.processField(field, schema, objectMapper, embeddedFieldAccessor);}
+            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+                BasicSchemaGenerator.this.processField(field, schema, objectMapper, embeddedFieldAccessor);
+            }
         }, new ReflectionUtils.FieldFilter() {
             @Override
             public boolean matches(Field field) {
-                boolean result = shouldProcessField(schema, field);
-                return result;
+                return shouldProcessField(schema, field);
             }
         });
     }
@@ -174,7 +190,7 @@ public class BasicSchemaGenerator implements SchemaGenerator {
                 Class<Collection<Enum>> enumCollectionCls = getEnumCollectionType(field);
                 if (enumCollectionCls.isInterface()) {
                     throw new IllegalArgumentException("Collection is an interface (" + enumCollectionCls +
-                                                       "). The concrete type cannot be determined. Please use a concrete Collection type or use @Enumerated(collectionType=HashSet.class)");
+                        "). The concrete type cannot be determined. Please use a concrete Collection type or use @Enumerated(collectionType=HashSet.class)");
                 }
                 boolean useOrdinal = cls == Integer.class;
                 accessor = new GremlinEnumStringCollectionFieldPropertyAccessor(field, enumCollectionCls, useOrdinal);
@@ -271,9 +287,12 @@ public class BasicSchemaGenerator implements SchemaGenerator {
 
     protected boolean shouldProcessField(GremlinSchema schema, Field field) {
         return field != null
-               //               && acceptType(field.getType())
-               && schema.getIdAccessor() instanceof GremlinFieldPropertyAccessor && !((GremlinFieldPropertyAccessor) schema.getIdAccessor()).getField().equals(field) && !Modifier.isTransient(
-                field.getModifiers()) && !Modifier.isStatic(field.getModifiers());
+            //               && acceptType(field.getType())
+            && schema.getIdAccessor() instanceof GremlinFieldPropertyAccessor
+            && !((GremlinFieldPropertyAccessor) schema.getIdAccessor()).getField().equals(field)
+            && !Modifier.isTransient(field.getModifiers())
+            && !Modifier.isStatic(field.getModifiers())
+            && (schema.getSuperSchema() == null || field.getDeclaringClass() == schema.getClassType());
     }
 
     protected Field getIdField(Class<?> cls) throws SchemaGeneratorException {
@@ -477,19 +496,19 @@ public class BasicSchemaGenerator implements SchemaGenerator {
 
     protected boolean acceptType(Class<?> cls) {
         return Enum.class.isAssignableFrom(cls) ||
-               ClassUtils.isPrimitiveOrWrapper(cls) ||
-               cls == String.class ||
-               Collection.class.isAssignableFrom(cls) ||
-               cls == Date.class ||
-               isVertexClass(cls) ||
-               isEmbeddedClass(cls) ||
-               isEdgeClass(cls);
+            ClassUtils.isPrimitiveOrWrapper(cls) ||
+            cls == String.class ||
+            Collection.class.isAssignableFrom(cls) ||
+            cls == Date.class ||
+            isVertexClass(cls) ||
+            isEmbeddedClass(cls) ||
+            isEdgeClass(cls);
     }
 
     protected boolean stdType(Class<?> cls) {
         return ClassUtils.isPrimitiveOrWrapper(cls) ||
-               cls == String.class ||
-               cls == Date.class;
+            cls == String.class ||
+            cls == Date.class;
     }
 
     @Override

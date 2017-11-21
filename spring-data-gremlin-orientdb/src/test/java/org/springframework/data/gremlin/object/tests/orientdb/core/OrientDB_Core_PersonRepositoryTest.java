@@ -8,7 +8,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.gremlin.object.core.domain.Person;
 import org.springframework.data.gremlin.object.core.repository.AbstractPersonRepositoryTest;
 import org.springframework.data.gremlin.object.core.repository.NativePersonRepository;
+import org.springframework.data.gremlin.object.core.repository.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
+import scala.Int;
 
 import java.util.Iterator;
 

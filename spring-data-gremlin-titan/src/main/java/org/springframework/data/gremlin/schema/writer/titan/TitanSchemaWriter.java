@@ -21,7 +21,7 @@ import static org.springframework.data.gremlin.schema.property.GremlinRelatedPro
  *
  * @author Gman
  */
-public class TitanSchemaWriter extends AbstractSchemaWriter {
+public class TitanSchemaWriter extends AbstractSchemaWriter<VertexLabel, EdgeLabel, PropertyKey, TitanElement> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TitanSchemaWriter.class);
 
@@ -53,9 +53,9 @@ public class TitanSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected Object createVertexClass(GremlinSchema schema) throws Exception {
+    protected VertexLabel createVertexClass(GremlinSchema schema) throws Exception {
         VertexLabel vertexClass = mgmt.getVertexLabel(schema.getClassName());
-        if(vertexClass == null) {
+        if (vertexClass == null) {
             vertexClass = mgmt.makeVertexLabel(schema.getClassName()).make();
             mgmt.commit();
         }
@@ -63,9 +63,9 @@ public class TitanSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected Object createEdgeClass(GremlinSchema schema) throws Exception {
+    protected EdgeLabel createEdgeClass(GremlinSchema schema) throws Exception {
         EdgeLabel edgeClass = mgmt.getEdgeLabel(schema.getClassName());
-        if(edgeClass == null) {
+        if (edgeClass == null) {
             edgeClass = mgmt.makeEdgeLabel(schema.getClassName()).make();
             mgmt.commit();
         }
@@ -84,7 +84,7 @@ public class TitanSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected Object createEdgeClass(String name, Object outVertex, Object inVertex, CARDINALITY cardinality) throws SchemaWriterException {
+    protected EdgeLabel createEdgeClass(String name, VertexLabel outVertex, VertexLabel inVertex, CARDINALITY cardinality) throws SchemaWriterException {
 
         Multiplicity multiplicity = Multiplicity.SIMPLE;
         if (cardinality == CARDINALITY.ONE_TO_ONE) {
@@ -93,44 +93,41 @@ public class TitanSchemaWriter extends AbstractSchemaWriter {
             multiplicity = Multiplicity.ONE2MANY;
         }
 
-        EdgeLabel edgeLabel = mgmt.makeEdgeLabel(name).directed().multiplicity(multiplicity).make();
-        return edgeLabel;
+        return mgmt.makeEdgeLabel(name).directed().multiplicity(multiplicity).make();
     }
 
     @Override
-    protected boolean isEdgeInProperty(Object edgeClass) {
+    protected boolean isEdgeInProperty(EdgeLabel edgeClass) {
         return true;
     }
 
     @Override
-    protected boolean isEdgeOutProperty(Object edgeClass) {
+    protected boolean isEdgeOutProperty(EdgeLabel edgeClass) {
         return true;
     }
 
     @Override
-    protected Object setEdgeOut(Object edgeClass, Object vertexClass) {
+    protected PropertyKey setEdgeOut(EdgeLabel edgeClass, VertexLabel vertexClass) {
         return null;
     }
 
     @Override
-    protected Object setEdgeIn(Object edgeClass, Object vertexClass) {
+    protected PropertyKey setEdgeIn(EdgeLabel edgeClass, VertexLabel vertexClass) {
         return null;
     }
 
     @Override
-    protected Object createProperty(Object parentElement, String name, Class<?> cls) {
+    protected PropertyKey createProperty(TitanElement parentElement, String name, Class<?> cls) {
         return mgmt.makePropertyKey(name).dataType(cls).make();
     }
 
     @Override
-    protected void createNonUniqueIndex(Object prop) {
-        PropertyKey property = (PropertyKey) prop;
+    protected void createNonUniqueIndex(PropertyKey property) {
         mgmt.buildIndex(property.getName(), Vertex.class).addKey(property).buildCompositeIndex();
     }
 
     @Override
-    protected void createUniqueIndex(Object prop) {
-        PropertyKey property = (PropertyKey) prop;
+    protected void createUniqueIndex(PropertyKey property) {
         mgmt.buildIndex(property.getName(), Vertex.class).addKey(property).unique().buildCompositeIndex();
     }
 
