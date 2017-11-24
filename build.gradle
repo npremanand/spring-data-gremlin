@@ -56,6 +56,7 @@ allprojects {
     }
     dependencies {
         compile 'javax.inject:javax.inject:1@jar'
+        compile 'com.google.guava:guava:16.0.1'
         compile 'org.springframework:spring-beans'
         compile 'org.springframework:spring-context'
         compile 'org.springframework:spring-tx'
