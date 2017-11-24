@@ -18,10 +18,10 @@ import org.springframework.data.gremlin.object.jpa.TestService;
 import org.springframework.data.gremlin.object.jpa.domain.*;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@Transactional
+@Rollback
 @TestExecutionListeners(
         inheritListeners = false,
         listeners = { DependencyInjectionTestExecutionListener.class })
