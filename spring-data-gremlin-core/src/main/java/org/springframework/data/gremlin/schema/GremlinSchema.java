@@ -260,7 +260,7 @@ public abstract class GremlinSchema<V> {
         return decodeId(getIdAccessor().get(obj));
     }
 
-    void setObjectId(Object obj, Element element) {
+    public void setObjectId(Object obj, Element element) {
         getIdAccessor().set(obj, encodeId(element.getId().toString()));
     }
 
@@ -272,7 +272,7 @@ public abstract class GremlinSchema<V> {
         return null;
     }
 
-    String encodeId(String id) {
+    public String encodeId(String id) {
         if (id == null) {
             return null;
         }
