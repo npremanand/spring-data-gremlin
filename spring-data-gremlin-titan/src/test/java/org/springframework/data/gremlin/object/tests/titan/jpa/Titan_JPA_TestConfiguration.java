@@ -34,13 +34,13 @@ import java.io.IOException;
 public class Titan_JPA_TestConfiguration {
 
     @Bean
-    public TitanGremlinGraphFactory factory() {
+    public GremlinGraphFactory factory() {
         try {
             FileUtils.forceDeleteOnExit(new File("/tmp/graph"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        TitanGremlinGraphFactory factory = new TitanGremlinGraphFactory();
+        GremlinGraphFactory factory = new TitanGremlinGraphFactory();
         factory.setUrl("inmemory");
         //        factory.setUsername("admin");
         //        factory.setPassword("admin");

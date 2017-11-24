@@ -14,8 +14,6 @@ import org.springframework.data.gremlin.repository.titan.TitanGraphAdapter;
 import org.springframework.data.gremlin.repository.titan.TitanGremlinRepository;
 import org.springframework.data.gremlin.schema.GremlinBeanPostProcessor;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
-import org.springframework.data.gremlin.schema.generator.DefaultSchemaGenerator;
-import org.springframework.data.gremlin.schema.generator.SchemaGenerator;
 import org.springframework.data.gremlin.schema.writer.SchemaWriter;
 import org.springframework.data.gremlin.schema.writer.titan.TitanSchemaWriter;
 import org.springframework.data.gremlin.support.GremlinRepositoryFactoryBean;
@@ -34,13 +32,13 @@ import java.io.IOException;
 public class Titan_Core_TestConfiguration {
 
     @Bean
-    public TitanGremlinGraphFactory factory() {
+    public GremlinGraphFactory factory() {
         try {
             FileUtils.forceDeleteOnExit(new File("/tmp/graph"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        TitanGremlinGraphFactory factory = new TitanGremlinGraphFactory();
+        GremlinGraphFactory factory = new TitanGremlinGraphFactory();
         factory.setUrl("inmemory");
         //        factory.setUsername("admin");
         //        factory.setPassword("admin");
