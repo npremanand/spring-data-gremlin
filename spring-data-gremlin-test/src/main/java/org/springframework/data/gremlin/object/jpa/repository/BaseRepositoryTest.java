@@ -16,17 +16,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gremlin.object.jpa.TestService;
 import org.springframework.data.gremlin.object.jpa.domain.*;
-import org.springframework.data.gremlin.object.jpa.domain.Address;
-import org.springframework.data.gremlin.object.jpa.domain.Area;
-import org.springframework.data.gremlin.object.jpa.domain.Country;
-import org.springframework.data.gremlin.object.jpa.domain.Location;
-import org.springframework.data.gremlin.object.jpa.domain.Person;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-import org.springframework.test.context.transaction.TransactionConfiguration;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -39,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TransactionConfiguration(defaultRollback = true)
+@Rollback
 @TestExecutionListeners(
         inheritListeners = false,
         listeners = { DependencyInjectionTestExecutionListener.class })
@@ -57,7 +52,7 @@ public abstract class BaseRepositoryTest {
     protected LocationRepository locationRepository;
 
     @Autowired
-    protected GremlinGraphFactory factory;
+    protected GremlinGraphFactory<Graph> factory;
 
     @Autowired
     protected TestService testService;

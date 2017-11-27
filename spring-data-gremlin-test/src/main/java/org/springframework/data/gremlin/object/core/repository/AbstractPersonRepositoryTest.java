@@ -3,8 +3,6 @@ package org.springframework.data.gremlin.object.core.repository;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.gremlin.object.core.domain.*;
@@ -17,7 +15,6 @@ import static org.springframework.util.Assert.notNull;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractPersonRepositoryTest.class);
 
     @Test
     public void savePerson() {
@@ -374,13 +371,8 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         assertNotNull(graham);
         assertNotNull(graham.getLocations());
         assertEquals(5, graham.getLocations().size());
-        List<Located> locations = new ArrayList<Located>(graham.getLocations());
-        Collections.sort(locations, new Comparator<Located>() {
-            @Override
-            public int compare(Located o1, Located o2) {
-                return (int) (o1.getLocation().getLatitude() - o2.getLocation().getLatitude());
-            }
-        });
+        List<Located> locations = new ArrayList<>(graham.getLocations());
+        locations.sort((o1, o2) -> (int) (o1.getLocation().getLatitude() - o2.getLocation().getLatitude()));
         Located location = locations.get(0);
         assertNotNull(location);
         assertEquals(-33, location.getLocation().getLatitude(), 0.00001);
@@ -394,13 +386,8 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         Person graham = repository.findByFirstName("Graham").get(0);
         assertEquals(5, graham.getLocations().size());
 
-        List<Located> locations = new ArrayList<Located>(graham.getLocations());
-        Collections.sort(locations, new Comparator<Located>() {
-            @Override
-            public int compare(Located o1, Located o2) {
-                return (int) (o1.getLocation().getLatitude() - o2.getLocation().getLatitude());
-            }
-        });
+        List<Located> locations = new ArrayList<>(graham.getLocations());
+        locations.sort((o1, o2) -> (int) (o1.getLocation().getLatitude() - o2.getLocation().getLatitude()));
         assertEquals(151, locations.get(0).getLocation().getLongitude(), 0.0001);
 
         locations.get(0).getLocation().setLongitude(100);
@@ -409,13 +396,8 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         graham = repository.findByFirstName("Graham").get(0);
         assertEquals(5, graham.getLocations().size());
 
-        locations = new ArrayList<Located>(graham.getLocations());
-        Collections.sort(locations, new Comparator<Located>() {
-            @Override
-            public int compare(Located o1, Located o2) {
-                return (int) (o1.getLocation().getLatitude() - o2.getLocation().getLatitude());
-            }
-        });
+        locations = new ArrayList<>(graham.getLocations());
+        locations.sort((o1, o2) -> (int) (o1.getLocation().getLatitude() - o2.getLocation().getLatitude()));
         assertEquals(100, locations.get(0).getLocation().getLongitude(), 0.0001);
 
     }
@@ -434,7 +416,7 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
 
         graham = repository.findByFirstName("Graham").get(0);
 
-        List<Located> locations = new ArrayList<Located>(graham.getLocations());
+        List<Located> locations = new ArrayList<>(graham.getLocations());
         assertEquals(6, locations.size());
 
         boolean found = false;
@@ -451,14 +433,14 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         Person graham = repository.findByFirstName("Graham").get(0);
         assertEquals(5, graham.getLocations().size());
 
-        List<Located> locations = new ArrayList<Located>(graham.getLocations());
+        List<Located> locations = new ArrayList<>(graham.getLocations());
         locations.remove(0);
-        graham.setLocations(new HashSet<Located>(locations));
+        graham.setLocations(new HashSet<>(locations));
         repository.save(graham);
 
         graham = repository.findByFirstName("Graham").get(0);
 
-        locations = new ArrayList<Located>(graham.getLocations());
+        locations = new ArrayList<>(graham.getLocations());
         assertEquals(4, locations.size());
     }
 
@@ -627,7 +609,7 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
     public void saveDynamicMap() {
         Person person = new Person("Sasa", "Brown");
 
-        Map<String, Object> randoms = new HashMap();
+        Map<String, Object> randoms = new HashMap<>();
         randoms.put("date", new Date());
         randoms.put("boo", true);
         randoms.put("status", 1);
@@ -650,14 +632,14 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
     public void saveDynamicMap_and_RemoveOldProperty() {
         Person person = new Person("Sasa", "Brown");
 
-        Map<String, Object> randoms = new HashMap();
+        Map<String, Object> randoms = new HashMap<>();
         randoms.put("date", new Date());
         randoms.put("boo", true);
         randoms.put("status", 1);
         randoms.put("hello", null);
         person.setRandoms(randoms);
 
-        Map<String, Object> other = new HashMap();
+        Map<String, Object> other = new HashMap<>();
         other.put("hello", "world");
         person.setOtherStuff(other);
 

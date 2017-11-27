@@ -28,7 +28,7 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
     @Override
     public void copyToVertex(GremlinRelatedProperty property, GremlinGraphAdapter graphAdapter, Vertex vertex, Object val, Map<Object, Object> cascadingSchemas) {
 
-        Vertex linkedVertex = null;
+        Vertex linkedVertex;
 
         // get the current edge for this property
         Iterable<Edge> edges = vertex.getEdges(property.getDirection(), property.getName());
@@ -51,7 +51,7 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
                 linkedVertex = graphAdapter.createVertex(property.getRelatedSchema());
             }
 
-            Assert.notNull(linkedVertex);
+            Assert.notNull(linkedVertex, "Creation of vertex failed from " + property.getRelatedSchema().getClassName());
             if (property.getDirection() == Direction.OUT) {
                 graphAdapter.addEdge(null, vertex, linkedVertex, property.getName());
             } else {
@@ -69,16 +69,13 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
     @Override
     public <K> Object loadFromVertex(GremlinRelatedProperty property, GremlinGraphAdapter graphAdapter, Vertex vertex, Map<Object, Object> cascadingSchemas) {
 
-        Object val = null;
         for (Edge outEdge : vertex.getEdges(property.getDirection(), property.getName())) {
             graphAdapter.refresh(outEdge);
             Vertex cascadingVertex = outEdge.getVertex(property.getDirection().opposite());
             graphAdapter.refresh(cascadingVertex);
-            val = property.getRelatedSchema().cascadeLoadFromGraph(graphAdapter, cascadingVertex, cascadingSchemas);
+            return property.getRelatedSchema().cascadeLoadFromGraph(graphAdapter, cascadingVertex, cascadingSchemas);
             //            val = property.getRelatedSchema().loadFromGraph(cascadingVertex);
-            break;
         }
-
-        return val;
+        return null;
     }
 }

@@ -13,8 +13,6 @@ import org.springframework.data.gremlin.repository.tinker.TinkerGraphAdapter;
 import org.springframework.data.gremlin.repository.tinker.TinkerGremlinRepository;
 import org.springframework.data.gremlin.schema.GremlinBeanPostProcessor;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
-import org.springframework.data.gremlin.schema.generator.DefaultSchemaGenerator;
-import org.springframework.data.gremlin.schema.generator.SchemaGenerator;
 import org.springframework.data.gremlin.support.GremlinRepositoryFactoryBean;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.data.gremlin.tx.GremlinTransactionManager;
@@ -26,8 +24,8 @@ import org.springframework.data.gremlin.tx.tinker.TinkerGremlinGraphFactory;
 public class Tinker_Core_TestConfiguration {
 
     @Bean
-    public TinkerGremlinGraphFactory factory() {
-        TinkerGremlinGraphFactory factory = new TinkerGremlinGraphFactory();
+    public GremlinGraphFactory factory() {
+        GremlinGraphFactory factory = new TinkerGremlinGraphFactory();
         return factory;
     }
 

@@ -4,6 +4,8 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Element;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
@@ -21,7 +23,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.lang.reflect.Modifier;
 import java.util.*;
-
 
 /**
  * <p>
@@ -63,6 +64,8 @@ public abstract class GremlinSchema<V> {
     private Multimap<Class<?>, GremlinProperty> typePropertyMap = LinkedListMultimap.create();
 
     private Set<GremlinProperty> properties = new HashSet<>();
+
+    private Class<? extends V> proxyClass;
 
     public void addProperty(GremlinProperty property) {
         property.setSchema(this);
@@ -225,32 +228,32 @@ public abstract class GremlinSchema<V> {
         return cascadeLoadFromGraph(graphAdapter, element, new HashMap<>());
     }
 
-    public V cascadeLoadFromGraph(GremlinGraphAdapter graphAdapter, Element element, Map<Object, Object> noCascadingMap) {
-
-        V obj = (V) noCascadingMap.get(element.getId());
-        if (obj == null) {
-            try {
-                obj = getClassType().newInstance();
-
-                GremlinPropertyAccessor idAccessor = getIdAccessor();
-                idAccessor.set(obj, encodeId(element.getId().toString()));
-                noCascadingMap.put(element.getId(), obj);
-            } catch (Exception e) {
-                throw new IllegalStateException("Could not instantiate new " + getClassType(), e);
-            }
-            for (GremlinProperty property : getProperties()) {
-
-                Object val = property.loadFromVertex(graphAdapter, element, noCascadingMap);
-
-                GremlinPropertyAccessor accessor = property.getAccessor();
-                try {
-                    accessor.set(obj, val);
-                } catch (Exception e) {
-                    LOGGER.warn(String.format("Could not load property %s of %s", property, obj.toString()), e);
-                }
-            }
+    private void initProxy() {
+        if (proxyClass != null) {
+            return;
         }
-        return obj;
+        ProxyFactory factory = new ProxyFactory();
+        factory.setSuperclass(getClassType());
+        //noinspection unchecked
+        proxyClass = factory.createClass();
+    }
+
+    public V cascadeLoadFromGraph(final GremlinGraphAdapter graphAdapter, final Element element, final Map<Object, Object> noCascadingMap) {
+        //noinspection unchecked
+        V obj = (V) noCascadingMap.get(element.getId());
+        if (obj != null) {
+            return obj;
+        }
+        initProxy();
+        try {
+            obj = proxyClass.newInstance();
+            noCascadingMap.put(element.getId(), obj);
+            ((Proxy) obj).setHandler(new LazyInitializationHandler(this, graphAdapter, element, noCascadingMap));
+            setObjectId(obj, element);
+            return obj;
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalStateException("Could not instantiate new " + getClassType(), e);
+        }
     }
 
     public String getGraphId(Object obj) {
@@ -303,7 +306,10 @@ public abstract class GremlinSchema<V> {
 
     @Override
     public String toString() {
-        return "GremlinSchema{className='" + className + "', classType=" + classType + '}';
+        return "GremlinSchema{"
+                + "className='" + className + '\''
+                + ", classType=" + classType +
+                '}';
     }
 
     @Override
