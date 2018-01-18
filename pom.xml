@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.kiwigrid</groupId>
+	<artifactId>spring-data-gremlin</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<name>Spring Data Gremlin</name>
+	<description>Spring Data module for Gremlin repositories.</description>
+	<url>https://github.com/kiwigird/spring-data-gremlin</url>
+
+	<packaging>pom</packaging>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+
+		<spring-platform.version>2.0.8.RELEASE</spring-platform.version>
+		<tinkerpop.version>2.6.0</tinkerpop.version>
+		<orientdb.version>2.2.31</orientdb.version>
+		<guava.version>16.0.1</guava.version>
+	</properties>
+
+
+	<modules>
+		<module>spring-data-gremlin-core</module>
+		<module>spring-data-gremlin-test</module>
+		<module>spring-data-gremlin-schemagen-jpa</module>
+		<module>spring-data-gremlin-schemagen-neo4j</module>
+		<module>spring-data-gremlin-orientdb</module>
+		<module>spring-data-gremlin-tinker</module>
+		<module>spring-data-gremlin-titan</module>
+	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>1.10.19</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.spring.platform</groupId>
+				<artifactId>platform-bom</artifactId>
+				<version>${spring-platform.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>com.tinkerpop.gremlin</groupId>
+				<artifactId>gremlin-java</artifactId>
+				<version>${tinkerpop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.tinkerpop.gremlin</groupId>
+				<artifactId>gremlin-groovy</artifactId>
+				<version>${tinkerpop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kiwigrid</groupId>
+				<artifactId>spring-data-gremlin-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kiwigrid</groupId>
+				<artifactId>spring-data-gremlin-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kiwigrid</groupId>
+				<artifactId>spring-data-gremlin-schemagen-neo4j</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kiwigrid</groupId>
+				<artifactId>spring-data-gremlin-schemagen-jpa</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-graphdb</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-lucene</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-spatial</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-neo4j</artifactId>
+				<version>3.4.6.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate.javax.persistence</groupId>
+				<artifactId>hibernate-jpa-2.1-api</artifactId>
+				<version>1.0.0.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<developers>
+		<developer>
+			<id>gjrwebber</id>
+			<name>Graham Webber</name>
+			<email>gjrwebber@gmail.com</email>
+		</developer>
+		<developer>
+			<id>aberger</id>
+			<name>Andreas Berger</name>
+			<email>andreas@berger-ecommerce.com</email>
+		</developer>
+	</developers>
+
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<comments>Copyright 2008-2013 the original author or authors.
+
+				Licensed under the Apache License, Version 2.0 (the "License");
+				you may not use this file except in compliance with the License.
+				You may obtain a copy of the License at
+
+				http://www.apache.org/licenses/LICENSE-2.0
+
+				Unless required by applicable law or agreed to in writing, software
+				distributed under the License is distributed on an "AS IS" BASIS,
+				WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+				implied.
+				See the License for the specific language governing permissions and
+				limitations under the License.
+			</comments>
+		</license>
+
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git@github.com:kiwigird/spring-data-gremlin.git</connection>
+		<developerConnection>scm:git:git@github.com:kiwigird/spring-data-gremlin.git</developerConnection>
+		<url>git@github.com:kiwigird/spring-data-gremlin.git</url>
+	</scm>
+
+	<repositories>
+		<repository>
+			<id>sonatype</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>sonatype-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+</project>

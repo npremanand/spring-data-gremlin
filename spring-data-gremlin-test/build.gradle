@@ -1,8 +1,0 @@
-dependencies {
-    compile('org.mockito:mockito-core')
-    compile('org.springframework:spring-test')
-    compile('junit:junit:')
-    compile('org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final')
-    compile('org.springframework.data:spring-data-neo4j')
-    compile project(':spring-data-gremlin-core')
-}
