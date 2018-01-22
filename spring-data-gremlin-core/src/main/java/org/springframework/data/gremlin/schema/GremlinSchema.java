@@ -248,6 +248,13 @@ public abstract class GremlinSchema<V> {
         if (obj != null) {
             return obj;
         }
+        String className = graphAdapter.getClassName(element);
+        GremlinSchema<? extends V> schema = findMostSpecificSchema(className);
+        return schema.specificCascadeLoadFromGraph(graphAdapter, element, noCascadingMap);
+    }
+
+    private V specificCascadeLoadFromGraph(GremlinGraphAdapter graphAdapter, Element element, Map<Object, Object> noCascadingMap) {
+        V obj;
         initProxy();
         try {
             obj = proxyClass.newInstance();
