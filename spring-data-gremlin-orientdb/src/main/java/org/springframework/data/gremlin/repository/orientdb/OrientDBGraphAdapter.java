@@ -1,10 +1,8 @@
 package org.springframework.data.gremlin.repository.orientdb;
 
-import org.apache.tinkerpop.gremlin.orientdb.OrientElement;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
@@ -24,9 +22,7 @@ public class OrientDBGraphAdapter extends GremlinGraphAdapter<OrientGraph> {
     @Override
     @Transactional(readOnly = false)
     public Vertex createVertex(OrientGraph graph, String className) {
-        String classname = "class:" + className;
-        Vertex vertex = graph.addVertex(classname);
-        return vertex;
+        return graph.addVertex(className);
     }
 
     @Override
@@ -58,16 +54,5 @@ public class OrientDBGraphAdapter extends GremlinGraphAdapter<OrientGraph> {
     @Override
     public boolean isValidId(String id) {
         return super.isValidId(id) && !id.contains("-");
-    }
-
-    @Override
-    public String getClassName(Element element) {
-        if (element instanceof OrientVertex){
-            return ((OrientVertex) element).getRecord().getClassName();
-        }
-        if (element instanceof OrientEdge){
-            return ((OrientEdge) element).getRecord().getClassName();
-        }
-        return super.getClassName(element);
     }
 }

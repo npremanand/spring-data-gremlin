@@ -41,6 +41,11 @@ public final class GremlinQueryLookupStrategy {
             this.graphAdapter = graphAdapter;
         }
 
+        @Override
+        public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory, NamedQueries namedQueries) {
+            return resolveQuery(new GremlinQueryMethod(method, metadata, factory), namedQueries);
+        }
+
         protected abstract RepositoryQuery resolveQuery(GremlinQueryMethod method, NamedQueries namedQueries);
     }
 

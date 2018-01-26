@@ -1,6 +1,5 @@
 package org.springframework.data.gremlin.query.orientdb;
 
-import com.orientechnologies.orient.core.sql.OCommandSQL;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.gremlin.query.AbstractNativeGremlinQuery;
 import org.springframework.data.gremlin.query.GremlinQueryMethod;
@@ -78,10 +77,7 @@ public class NativeOrientdbGremlinQuery extends AbstractNativeGremlinQuery {
     private Object run(String queryString, Map<String, Object> params) {
         Assert.hasLength(queryString);
         try {
-
-            // TODO I don't know how to pass parameters in the orientdb query
-            Object result = orientGraphFactory.graph().executeSql(queryString);
-            return result;
+            return orientGraphFactory.graph().executeSql(queryString, params);
         } catch (RuntimeException e) {
             e.printStackTrace();
             throw e;

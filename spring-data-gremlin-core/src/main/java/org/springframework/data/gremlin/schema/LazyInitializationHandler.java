@@ -1,8 +1,8 @@
 package org.springframework.data.gremlin.schema;
 
-import com.tinkerpop.blueprints.Element;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyObject;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
@@ -64,15 +64,15 @@ public class LazyInitializationHandler implements MethodHandler {
 
     @SuppressWarnings("unchecked")
     private void initialize(Object self) {
-        LOGGER.debug("Init proxy of {}:{}", schema.getClassName(), element.getId());
+        LOGGER.debug("Init proxy of {}:{}", schema.getClassName(), element.id());
         try {
             GremlinPropertyAccessor idAccessor = schema.getIdAccessor();
-            idAccessor.set(self, schema.encodeId(element.getId().toString()));
+            idAccessor.set(self, schema.encodeId(element.id().toString()));
         } catch (Exception e) {
             throw new IllegalStateException("Could not instantiate new " + schema.getClassType(), e);
         }
         schema.getPropertyStream().forEach(property -> {
-            LOGGER.trace("Load property {}::{} of {}", schema.getClassType(), property.getName(), element.getId());
+            LOGGER.trace("Load property {}::{} of {}", schema.getClassType(), property.getName(), element.id());
             Object val = property.loadFromVertex(graphAdapter, element, noCascadingMap);
             GremlinPropertyAccessor accessor = property.getAccessor();
             try {
@@ -81,7 +81,7 @@ public class LazyInitializationHandler implements MethodHandler {
                 LOGGER.warn("Could not load property {} of {}", property, self.toString(), e);
             }
         });
-        LOGGER.debug("Finished proxy initialization of {}:{}", schema.getClassName(), element.getId());
+        LOGGER.debug("Finished proxy initialization of {}:{}", schema.getClassName(), element.id());
     }
 
     public static void initProxy(Object object) {

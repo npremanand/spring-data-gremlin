@@ -1,12 +1,11 @@
 package org.springframework.data.gremlin.schema.property.mapper;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.property.GremlinProperty;
-import org.springframework.data.gremlin.schema.property.accessor.*;
+import org.springframework.data.gremlin.schema.property.accessor.GremlinFieldPropertyAccessor;
 
 import java.util.Map;
 

@@ -2,11 +2,10 @@ package org.springframework.data.gremlin.schema;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import org.apache.tinkerpop.gremlin.structure.*;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyProperty;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
@@ -255,8 +254,7 @@ public abstract class GremlinSchema<V> {
         if (obj != null) {
             return obj;
         }
-        String className = graphAdapter.getClassName(element);
-        GremlinSchema<? extends V> schema = findMostSpecificSchema(className);
+        GremlinSchema<? extends V> schema = findMostSpecificSchema(element);
         return schema.specificCascadeLoadFromGraph(graphAdapter, element, noCascadingMap);
     }
 
@@ -364,10 +362,10 @@ public abstract class GremlinSchema<V> {
         return this;
     }
 
-    public GremlinSchema<? extends V> findMostSpecificSchema(String className) {
-        if (inheritedClassSchemaMapping == null || className == null) {
+    public GremlinSchema<? extends V> findMostSpecificSchema(Element element) {
+        if (inheritedClassSchemaMapping == null) {
             return this;
         }
-        return inheritedClassSchemaMapping.getOrDefault(className, this);
+        return inheritedClassSchemaMapping.getOrDefault(element.label(), this);
     }
 }

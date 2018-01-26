@@ -21,7 +21,7 @@ import static org.springframework.data.gremlin.schema.property.GremlinRelatedPro
  *
  * @author Gman
  */
-public class JanusSchemaWriter extends AbstractSchemaWriter<VertexLabel, EdgeLabel, PropertyKey, TitanElement> {
+public class JanusSchemaWriter extends AbstractSchemaWriter<VertexLabel, EdgeLabel, PropertyKey, JanusGraphElement> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JanusSchemaWriter.class);
 
@@ -119,7 +119,7 @@ public class JanusSchemaWriter extends AbstractSchemaWriter<VertexLabel, EdgeLab
     }
 
     @Override
-    protected PropertyKey createProperty(TitanElement parentElement, String name, Class<?> cls) {
+    protected PropertyKey createProperty(JanusGraphElement parentElement, String name, Class<?> cls) {
         if (cls == double.class) {
             cls = Double.class;
         }

@@ -42,6 +42,8 @@ public abstract class AbstractSchemaWriter<V extends BASE, E extends BASE, P, BA
                 element = createVertexClass(schema);
                 writeProperties(element, schema);
             } else if (schema.isEdgeSchema()) {
+                // TODO
+                System.out.println();
 //
 //              V outVertex = createVertexClass(schema.getOutProperty().getRelatedSchema());
 //              V inVertex = createVertexClass(schema.getInProperty().getRelatedSchema());

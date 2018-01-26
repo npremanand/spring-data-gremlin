@@ -1,10 +1,10 @@
 package org.springframework.data.gremlin.repository;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -182,8 +182,7 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
         }
 
         if (element != null) {
-            String className = graphAdapter.getClassName(element);
-            GremlinSchema<? extends T> schema = this.schema.findMostSpecificSchema(className);
+            GremlinSchema<? extends T> schema = this.schema.findMostSpecificSchema(element);
             object = schema.loadFromGraph(graphAdapter, element);
         }
 

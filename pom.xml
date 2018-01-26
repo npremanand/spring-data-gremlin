@@ -28,8 +28,7 @@
 		<source.level>1.8</source.level>
 
 		<springdata.commons>1.13.9.RELEASE</springdata.commons>
-		<tinkerpop.version>2.6.0</tinkerpop.version>
-		<orientdb.version>2.2.31</orientdb.version>
+		<tinkerpop.version>3.3.1</tinkerpop.version>
 		<guava.version>16.0.1</guava.version>
 	</properties>
 
@@ -41,7 +40,7 @@
 		<module>spring-data-gremlin-schemagen-neo4j</module>
 		<module>spring-data-gremlin-orientdb</module>
 		<module>spring-data-gremlin-tinker</module>
-		<module>spring-data-gremlin-titan</module>
+		<module>spring-data-gremlin-janus</module>
 	</modules>
 
 	<dependencyManagement>
@@ -52,13 +51,18 @@
 				<version>${springdata.commons}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.tinkerpop.gremlin</groupId>
-				<artifactId>gremlin-java</artifactId>
+				<groupId>org.apache.tinkerpop</groupId>
+				<artifactId>gremlin-driver</artifactId>
 				<version>${tinkerpop.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.tinkerpop.gremlin</groupId>
+				<groupId>org.apache.tinkerpop</groupId>
 				<artifactId>gremlin-groovy</artifactId>
+				<version>${tinkerpop.version}</version>
+			</dependency>
+      <dependency>
+				<groupId>org.apache.tinkerpop</groupId>
+				<artifactId>tinkergraph-gremlin</artifactId>
 				<version>${tinkerpop.version}</version>
 			</dependency>
 			<dependency>
@@ -80,21 +84,6 @@
 				<groupId>com.kiwigrid</groupId>
 				<artifactId>spring-data-gremlin-schemagen-jpa</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.orientechnologies</groupId>
-				<artifactId>orientdb-graphdb</artifactId>
-				<version>${orientdb.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.orientechnologies</groupId>
-				<artifactId>orientdb-lucene</artifactId>
-				<version>${orientdb.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.orientechnologies</groupId>
-				<artifactId>orientdb-spatial</artifactId>
-				<version>${orientdb.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.data</groupId>
@@ -147,6 +136,16 @@
 			<name>Andreas Berger</name>
 			<email>andreas@berger-ecommerce.com</email>
 		</developer>
+    <developer>
+      <id>zifnab87</id>
+      <name>Michail Michailidis</name>
+      <email>mmichaelid@gmail.com</email>
+    </developer>
+    <developer>
+      <id>Patrick Madden</id>
+      <name>Patrick Madden</name>
+      <email>pmadden@tomsawyer.com</email>
+    </developer>
 	</developers>
 
 	<licenses>

@@ -1,7 +1,6 @@
 package org.springframework.data.gremlin.object.core.domain;
 
 import org.springframework.data.gremlin.annotation.*;
-import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,7 +64,7 @@ public class Person extends Bipod<Area> {
     @Property(type = Property.SerialisableType.JSON, jsonMixin = PetMxin.class)
     private Pet favouritePet;
 
-    @Dynamic(name="Randoms", linkName = "has_random")
+    @Dynamic(name = "Randoms", linkName = "has_random")
     private Map<String, Object> randoms;
 
     @Dynamic(name = "OtherStuff", linkName = "has_other_stuff")

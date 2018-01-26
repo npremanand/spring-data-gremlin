@@ -1,8 +1,8 @@
 package org.springframework.data.gremlin.repository;
 
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +34,7 @@ public class GremlinGraphAdapter<G extends Graph> {
     @Transactional(readOnly = false)
     public Vertex createVertex(G graph, String className) {
         LOGGER.info("CREATING VERTEX: " + className);
-        Vertex vertex = graph.addVertex(className);
-        return vertex;
+        return graph.addVertex(className);
     }
 
     @Transactional(readOnly = true)
@@ -85,6 +84,7 @@ public class GremlinGraphAdapter<G extends Graph> {
 
     /**
      * Assumes the Vertex exists
+     *
      * @param id
      * @return
      */
@@ -92,12 +92,13 @@ public class GremlinGraphAdapter<G extends Graph> {
     public Vertex getVertex(String id) {
         if (id == null) {
             return null;
-        }        
+        }
         return graphFactory.graph().vertices(id).next();
     }
 
     /**
      * Assumes the Edge exists
+     *
      * @param id
      * @return
      */
@@ -143,7 +144,4 @@ public class GremlinGraphAdapter<G extends Graph> {
         return !StringUtils.isEmpty(id);
     }
 
-    public String getClassName(Element element) {
-        return null;
-    }
 }

@@ -8,7 +8,6 @@ import org.springframework.data.gremlin.schema.GremlinSchema;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
 import org.springframework.data.repository.query.DefaultParameters;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 

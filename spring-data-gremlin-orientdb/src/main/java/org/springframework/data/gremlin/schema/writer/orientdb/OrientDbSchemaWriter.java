@@ -5,7 +5,6 @@ import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.schema.GremlinSchema;
@@ -45,8 +44,8 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter<OClass, OClass, O
         }
         try {
 
-            v = dbf.graphNoTx().getRawDatabase().getClass("Vertex");
-            e = dbf.graphNoTx().getRawDatabase().getClass("Edge");
+            v = dbf.graphNoTx().getRawDatabase().getClass(OClass.VERTEX_CLASS_NAME);
+            e = dbf.graphNoTx().getRawDatabase().getClass(OClass.EDGE_CLASS_NAME);
 
         } catch (Exception e) {
 

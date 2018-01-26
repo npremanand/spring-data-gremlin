@@ -4,7 +4,6 @@ import org.springframework.data.gremlin.annotation.Query;
 import org.springframework.data.gremlin.object.neo4j.domain.Likes;
 import org.springframework.data.gremlin.repository.GremlinRepository;
 
-import java.util.Date;
 import java.util.List;
 
 /**

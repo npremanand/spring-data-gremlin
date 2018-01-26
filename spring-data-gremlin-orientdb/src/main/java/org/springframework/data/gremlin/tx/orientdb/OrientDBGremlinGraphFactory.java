@@ -23,17 +23,24 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
 
 	private OrientGraphFactory ogf;
 
-	public OrientGraph graphNoTx() {
+    public OrientDBGremlinGraphFactory() {
+        setAutoCreate(false);
+    }
+
+    public OrientGraph graphNoTx() {
 		return ogf.getNoTx();
 	}
 
     @Override
     protected void createPool() {
-        notNull(url);
-        notNull(username);
-        notNull(password);
-        ogf = new OrientGraphFactory(getUrl(), getUsername(), getPassword()).setupPool(getMinPoolSize(), getMaxPoolSize());
-    	ogf.setAutoStartTx(false);}
+        notNull(url, "url must not be null");
+        notNull(username, "username must not be null");
+        notNull(password,"password must not be null");
+        ogf = new OrientGraphFactory(getUrl(), getUsername(), getPassword())
+            .setupPool(getMinPoolSize(), getMaxPoolSize());
+        // TODO
+//    	ogf.setAutoStartTx(false);
+    }
 
 	@Override
 	public boolean isActive(OrientGraph graph) {
@@ -91,7 +98,7 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
 	@Override
 	public void resumeTx(OrientGraph oldGraph) {
 		try {
-			ODatabaseRecordThreadLocal.INSTANCE.set((ODatabaseDocumentInternal) ((ODatabaseInternal) oldGraph.getRawDatabase()).getUnderlying());
+			ODatabaseRecordThreadLocal.instance().set((ODatabaseDocumentInternal) ((ODatabaseInternal) oldGraph.getRawDatabase()).getUnderlying());
 		} catch (UnsupportedOperationException e) {
 			LOGGER.error("Could not :" + e.getMessage());
 		}
