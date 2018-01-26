@@ -1,6 +1,6 @@
 package org.springframework.data.gremlin.schema;
 
-import com.tinkerpop.blueprints.Element;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.property.accessor.GremlinFieldPropertyAccessor;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -41,13 +41,13 @@ public class GremlinDynamicSchema<V> extends GremlinVertexSchema<V> {
                 }
                 Object val = map.get(key);
                 if (val != null) {
-                    element.setProperty(key, val);
+                    element.property(key, val);
                 }
             }
 
-            for (String key : element.getPropertyKeys()) {
+            for (String key : element.keys()) {
                 if (!map.containsKey(key)) {
-                    element.removeProperty(key);
+                    element.property(key).remove();
                 }
             }
 
@@ -68,8 +68,8 @@ public class GremlinDynamicSchema<V> extends GremlinVertexSchema<V> {
     public V cascadeLoadFromGraph(GremlinGraphAdapter graphAdapter, Element element, Map<Object, Object> noCascadingMap) {
 
         Map<String, Object> obj = (Map<String, Object>) super.cascadeLoadFromGraph(graphAdapter, element, noCascadingMap);
-        for (String key : element.getPropertyKeys()) {
-            obj.put(key, element.getProperty(key));
+        for (String key : element.keys()) {
+            obj.put(key, element.property(key));
         }
         return (V) obj;
     }

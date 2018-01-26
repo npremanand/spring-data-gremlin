@@ -1,6 +1,6 @@
 package org.springframework.data.gremlin.schema.writer;
 
-import com.tinkerpop.blueprints.Direction;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.schema.GremlinSchema;
@@ -37,15 +37,16 @@ public abstract class AbstractSchemaWriter<V extends BASE, E extends BASE, P, BA
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("CREATING CLASS: " + schema.getClassName());
             }
-            BASE element;
+            BASE element = null;
             if (schema.isVertexSchema()) {
                 element = createVertexClass(schema);
+                writeProperties(element, schema);
             } else if (schema.isEdgeSchema()) {
-
-                V outVertex = createVertexClass(schema.getOutProperty().getRelatedSchema());
-                V inVertex = createVertexClass(schema.getInProperty().getRelatedSchema());
-
-                element = createEdgeClass(schema.getClassName(), outVertex, inVertex, schema.getOutProperty().getCardinality());
+//
+//              V outVertex = createVertexClass(schema.getOutProperty().getRelatedSchema());
+//              V inVertex = createVertexClass(schema.getInProperty().getRelatedSchema());
+//
+//              element = createEdgeClass(schema.getClassName(), outVertex, inVertex, schema.getOutProperty().getCardinality());
             } else {
                 throw new IllegalStateException("Unknown class type. Expected Vertex or Edge. " + schema);
             }
@@ -53,7 +54,6 @@ public abstract class AbstractSchemaWriter<V extends BASE, E extends BASE, P, BA
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("CREATED CLASS: " + schema.getClassName());
             }
-            writeProperties(element, schema);
             handledSchemas.add(schema);
         } catch (Exception e) {
 

@@ -41,11 +41,6 @@ public final class GremlinQueryLookupStrategy {
             this.graphAdapter = graphAdapter;
         }
 
-		@Override
-		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory, NamedQueries namedQueries) {
-			return resolveQuery(new GremlinQueryMethod(method, metadata, factory), namedQueries);
-        }
-
         protected abstract RepositoryQuery resolveQuery(GremlinQueryMethod method, NamedQueries namedQueries);
     }
 
@@ -60,6 +55,11 @@ public final class GremlinQueryLookupStrategy {
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(String.format("Could not create query metamodel for method %s!", method.toString()), e);
             }
+        }
+
+        @Override
+        public RepositoryQuery resolveQuery(Method method, RepositoryMetadata repositoryMetadata, ProjectionFactory projectionFactory, NamedQueries namedQueries) {
+            return resolveQuery(new GremlinQueryMethod(method, repositoryMetadata, projectionFactory), namedQueries);
         }
     }
 
@@ -96,8 +96,13 @@ public final class GremlinQueryLookupStrategy {
             }
             return repoQuery;
         }
-    }
 
+        @Override
+        public RepositoryQuery resolveQuery(Method method, RepositoryMetadata repositoryMetadata, ProjectionFactory projectionFactory, NamedQueries namedQueries) {
+            return resolveQuery(new GremlinQueryMethod(method, repositoryMetadata, projectionFactory), namedQueries);
+        }
+
+    }
     private static class CreateIfNotFoundQueryLookupStrategy extends AbstractQueryLookupStrategy {
 
         /** The declared query strategy. */
@@ -131,6 +136,11 @@ public final class GremlinQueryLookupStrategy {
                 repoQuery = createStrategy.resolveQuery(method, namedQueries);
             }
             return repoQuery;
+        }
+
+        @Override
+        public RepositoryQuery resolveQuery(Method method, RepositoryMetadata repositoryMetadata, ProjectionFactory projectionFactory, NamedQueries namedQueries) {
+            return resolveQuery(new GremlinQueryMethod(method, repositoryMetadata, projectionFactory), namedQueries);
         }
     }
 

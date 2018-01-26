@@ -5,9 +5,8 @@ import com.orientechnologies.orient.core.db.ODatabase;
 import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
 import com.orientechnologies.orient.core.db.ODatabaseInternal;
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.tx.AbstractGremlinGraphFactory;
@@ -24,7 +23,7 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
 
 	private OrientGraphFactory ogf;
 
-	public OrientGraphNoTx graphNoTx() {
+	public OrientGraph graphNoTx() {
 		return ogf.getNoTx();
 	}
 
@@ -38,7 +37,7 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
 
 	@Override
 	public boolean isActive(OrientGraph graph) {
-		return graph.getRawGraph().getTransaction().isActive();
+		return graph.tx().isOpen();
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
 	@Override
 	protected void createGraph() {
 		if (!getUrl().startsWith("remote:")) {
-			ODatabase db = ogf.getDatabase();
+			ODatabase db = ogf.getTx().database();
 			if (!db.exists()) {
 				db.create();
 				db.close();
@@ -92,18 +91,18 @@ public class OrientDBGremlinGraphFactory extends AbstractGremlinGraphFactory<Ori
 	@Override
 	public void resumeTx(OrientGraph oldGraph) {
 		try {
-			ODatabaseRecordThreadLocal.INSTANCE.set((ODatabaseDocumentInternal) ((ODatabaseInternal) oldGraph.getRawGraph()).getUnderlying());
+			ODatabaseRecordThreadLocal.INSTANCE.set((ODatabaseDocumentInternal) ((ODatabaseInternal) oldGraph.getRawDatabase()).getUnderlying());
 		} catch (UnsupportedOperationException e) {
 			LOGGER.error("Could not :" + e.getMessage());
 		}
 	}
 
 	public class ForceRetryException extends ONeedRetryException {
-		public ForceRetryException(ONeedRetryException exception) {
+        protected ForceRetryException(ONeedRetryException exception) {
 			super(exception);
 		}
 
-		public ForceRetryException(String message) {
+        protected ForceRetryException(String message) {
 			super(message);
 		}
 	}

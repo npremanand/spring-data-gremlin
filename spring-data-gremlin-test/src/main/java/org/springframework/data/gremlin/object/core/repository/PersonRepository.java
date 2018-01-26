@@ -68,7 +68,7 @@ public interface PersonRepository extends GremlinRepository<Person> {
     Page<Person> findByLastName(String lastName, Pageable pageable);
 
 
-    @Query(value = "graph.V('lastName', ?)")
+    @Query(value = "graph.V().has('lastName', ?)")
     Page<Person> queryLastName(String lastName, Pageable pageable);
 
 }

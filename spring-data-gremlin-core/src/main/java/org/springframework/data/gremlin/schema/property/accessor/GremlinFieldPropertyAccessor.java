@@ -1,5 +1,6 @@
 package org.springframework.data.gremlin.schema.property.accessor;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.springframework.data.gremlin.schema.LazyInitializationHandler;
 
 import java.lang.reflect.Field;

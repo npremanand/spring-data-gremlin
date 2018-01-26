@@ -2,8 +2,9 @@ package org.springframework.data.gremlin.schema;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Element;
+import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyProperty;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 import org.slf4j.Logger;
@@ -80,6 +81,11 @@ public abstract class GremlinSchema<V> {
         }
         properties.add(property);
         propertyMap.put(property.getName(), property);
+
+        //Hacky
+        if (property.getName().equals("out")) {
+            property.setName(property.getSchema().getClassName());
+        }
         if (property.getAccessor() instanceof GremlinFieldPropertyAccessor) {
             fieldToPropertyMap.put(((GremlinFieldPropertyAccessor) property.getAccessor()).getField().getName(), property);
         }
@@ -222,6 +228,7 @@ public abstract class GremlinSchema<V> {
                 @Override
                 public void afterCommit() {
                     setObjectId(obj, finalElement);
+
                 }
             });
         }
@@ -242,9 +249,9 @@ public abstract class GremlinSchema<V> {
         proxyClass = factory.createClass();
     }
 
-    public V cascadeLoadFromGraph(final GremlinGraphAdapter graphAdapter, final Element element, final Map<Object, Object> noCascadingMap) {
+    public V cascadeLoadFromGraph(GremlinGraphAdapter graphAdapter, Element element, Map<Object, Object> noCascadingMap) {
         //noinspection unchecked
-        V obj = (V) noCascadingMap.get(element.getId());
+        V obj = (V) noCascadingMap.get(element.id());
         if (obj != null) {
             return obj;
         }
@@ -258,7 +265,7 @@ public abstract class GremlinSchema<V> {
         initProxy();
         try {
             obj = proxyClass.newInstance();
-            noCascadingMap.put(element.getId(), obj);
+            noCascadingMap.put(element.id(), obj);
             ((Proxy) obj).setHandler(new LazyInitializationHandler(this, graphAdapter, element, noCascadingMap));
             setObjectId(obj, element);
             return obj;
@@ -272,7 +279,7 @@ public abstract class GremlinSchema<V> {
     }
 
     public void setObjectId(Object obj, Element element) {
-        getIdAccessor().set(obj, encodeId(element.getId().toString()));
+        getIdAccessor().set(obj, encodeId(element.id().toString()));
     }
 
     public String getObjectId(Object obj) {

@@ -1,12 +1,12 @@
 package org.springframework.data.gremlin.object.jpa.repository;
 
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import com.tinkerpop.gremlin.java.GremlinPipeline;
-import com.tinkerpop.pipes.util.Pipeline;
-import org.junit.After;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,7 +27,9 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -65,6 +67,24 @@ public abstract class BaseRepositoryTest {
     @Before
     public void before() {
 
+        Graph graph = factory.graph();
+        factory.beginTx(graph);
+        graph.vertices().forEachRemaining(new Consumer<Vertex>() {
+            @Override
+            public void accept(Vertex vertex) {
+                vertex.remove();
+            }
+        });
+
+
+        graph.edges().forEachRemaining(new Consumer<Edge>() {
+            @Override
+            public void accept(Edge edge) {
+                edge.remove();
+            }
+        });
+        factory.commitTx(graph);
+
         Address address = new Address(new Country("Australia"), "Newcastle", "Scenic Dr", new Area("2291"));
         addressRepository.save(address);
 
@@ -96,23 +116,23 @@ public abstract class BaseRepositoryTest {
         repository.save(new Person("Lara", "Ivanovic", address, true));
         repository.save(new Person("Jake", "Webber", address, false));
         repository.save(new Person("Sandra", "Ivanovic", new Address(new Country("Australia"), "Sydney", "Wilson St", new Area("2043")), false));
-        Graph graph = factory.graph();
 
-        Iterable<Vertex> addresses = graph.query().has("street").vertices();
+
+        List<Vertex> addresses = graph.traversal().V().has("street").toList();
         assertNotNull(addresses);
         for (Vertex addr : addresses) {
             assertNotNull(addr);
-            assertTrue(addr.getProperty("street").equals("Wilson St") || addr.getProperty("street").equals("Scenic Dr"));
+            assertTrue(addr.value("street").equals("Wilson St") || addr.value("street").equals("Scenic Dr"));
         }
 
         ScriptEngine engine = new GremlinGroovyScriptEngine();
 
         Bindings bindings = engine.createBindings();
-        bindings.put("g", graph);
+        bindings.put("g", graph.traversal());
         bindings.put("firstName", "Jake");
 
         try {
-            Pipeline obj = (Pipeline) engine.eval("g.V().has('firstName', firstName)", bindings);
+            GraphTraversal obj = (GraphTraversal) engine.eval("g.V().has('firstName', firstName)", bindings);
             assertTrue(obj.hasNext());
             Object o = obj.next();
             assertNotNull(o);
@@ -120,34 +140,25 @@ public abstract class BaseRepositoryTest {
             e.printStackTrace();
         }
 
-        GremlinPipeline<Graph, Vertex> pipe = new GremlinPipeline<Graph, Vertex>(graph).V().or(new GremlinPipeline().has("firstName", "Jake"), new GremlinPipeline().has("firstName", "Graham"));
+        GraphTraversalSource source = graph.traversal();
+        GraphTraversal<Vertex, Vertex> pipe = source.V().has("firstName", P.within("Jake", "Graham"));
 
         assertTrue("No Jake or Graham in Pipe!", pipe.hasNext());
-        for (Vertex obj : pipe) {
+        while (pipe.hasNext()) {
+            Vertex obj = pipe.next();
             assertNotNull(obj);
-            assertTrue(obj.getProperty("firstName").equals("Graham") || obj.getProperty("firstName").equals("Jake"));
+            assertTrue(obj.value("firstName").equals("Graham") || obj.value("firstName").equals("Jake"));
         }
 
-
-        GremlinPipeline<Object, ? extends Element> linkedPipe = new GremlinPipeline<Object, Element>(graph).V().outE("lives_at").inV().has("city", "Newcastle");
+        GraphTraversal<Vertex, Vertex> linkedPipe = source.V().outE("lives_at").inV().has("city", "Newcastle");
 
         assertTrue("No lives_at in Pipe!", linkedPipe.hasNext());
-        for (Element obj : linkedPipe) {
+        while (linkedPipe.hasNext()) {
+            Vertex obj = linkedPipe.next();
             assertNotNull(obj);
-            assertTrue(obj.getProperty("city").equals("Newcastle"));
+            assertTrue(obj.value("city").equals("Newcastle"));
         }
 
-        factory.commitTx(graph);
-    }
-
-    @After
-    public void after() {
-
-        Graph graph = factory.graph();
-        factory.beginTx(graph);
-        for (Vertex vertex : graph.getVertices()) {
-            graph.removeVertex(vertex);
-        }
         factory.commitTx(graph);
     }
 
