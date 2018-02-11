@@ -1,6 +1,6 @@
-# Spring Data Gremlin
+# Spring Data Tinkerpop
 
-Spring data gremlin makes it easier to implement Graph based repositories. This module extends [Spring Data](http://projects.spring.io/spring-data) to allow support for potentially any [Graph database](https://en.wikipedia.org/wiki/Graph_database) that implements the [Tinkerpop Blueprints 2.x API](https://github.com/tinkerpop/blueprints/wiki). 
+Spring data tinkerpop makes it easier to implement Graph based repositories. This module extends [Spring Data](http://projects.spring.io/spring-data) to allow support for potentially any [Graph database](https://en.wikipedia.org/wiki/Graph_database) that implements the [Tinkerpop Blueprints 2.x API](https://github.com/tinkerpop/blueprints/wiki). 
 
 ## Features
 
