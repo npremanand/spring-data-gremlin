@@ -54,7 +54,7 @@ public abstract class BaseRepositoryTest {
     protected LocationRepository locationRepository;
 
     @Autowired
-    protected GremlinGraphFactory<Graph> factory;
+    protected GremlinGraphFactory factory;
 
     @Autowired
     protected TestService testService;
