@@ -7,9 +7,12 @@ import org.springframework.data.gremlin.repository.GremlinRepository;
 import org.springframework.data.gremlin.repository.GremlinRepositoryContext;
 import org.springframework.data.gremlin.schema.GremlinSchema;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
+import org.springframework.data.gremlin.schema.property.accessor.GremlinIdFieldPropertyAccessor;
+import org.springframework.data.gremlin.schema.property.accessor.GremlinIdPropertyAccessor;
 import org.springframework.data.gremlin.schema.writer.SchemaWriter;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.query.EvaluationContextProvider;
@@ -18,6 +21,7 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+
 
 /**
  * A {@link RepositoryFactorySupport} for Gremlin.
@@ -48,15 +52,18 @@ public class GremlinRepositoryFactory extends RepositoryFactorySupport {
     @Override
     @SuppressWarnings("unchecked")
     public <T, ID extends Serializable> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-        return (EntityInformation<T, ID>) new GremlinMetamodelEntityInformation<T>(domainClass, schemaFactory.getSchema(domainClass).getIdAccessor());
+        GremlinSchema schema = schemaFactory.getSchema(domainClass);
+        GremlinIdPropertyAccessor idAccessor = schema.getIdAccessor();
+        return (EntityInformation<T, ID>) new GremlinMetamodelEntityInformation<T>(domainClass, idAccessor);
     }
+
 
     /* (non-Javadoc)
      * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryMetadata)
      */
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Object getTargetRepository(RepositoryMetadata metadata) {
+    protected Object getTargetRepository(RepositoryInformation metadata) {
         EntityInformation<?, Serializable> entityInformation = getEntityInformation(metadata.getDomainType());
         Class<?> javaType = entityInformation.getJavaType();
 
@@ -91,7 +98,7 @@ public class GremlinRepositoryFactory extends RepositoryFactorySupport {
      */
     @Override
     protected QueryLookupStrategy getQueryLookupStrategy(Key key, EvaluationContextProvider provider) {
-        return GremlinQueryLookupStrategy.create(dbf, schemaFactory, nativeQueryType, key);
+        return GremlinQueryLookupStrategy.create(dbf, schemaFactory, graphAdapter, nativeQueryType, key);
     }
 
 }

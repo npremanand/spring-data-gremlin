@@ -1,5 +1,9 @@
 package org.springframework.data.gremlin.schema.property.accessor;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 
 /**
@@ -9,29 +13,25 @@ import java.lang.reflect.Field;
  */
 public class GremlinFieldPropertyAccessor<V> extends AbstractGremlinFieldPropertyAccessor<V> {
 
-    private GremlinFieldPropertyAccessor parentAccessor;
+    private static final Logger LOGGER = LoggerFactory.getLogger(GremlinFieldPropertyAccessor.class);
 
     public GremlinFieldPropertyAccessor(Field field) {
         super(field);
     }
 
     public GremlinFieldPropertyAccessor(Field field, GremlinFieldPropertyAccessor parentAccessor) {
-        super(field);
-        this.parentAccessor = parentAccessor;
+        super(field, parentAccessor);
     }
 
     @Override
     public V get(Object object) {
         try {
 
-            if (parentAccessor != null) {
-                Object embeddedObj = parentAccessor.get(object);
-                if (embeddedObj == null) {
-                    return null;
-                }
-                object = embeddedObj;
+            object = getEmbeddedObject(object, false);
+            V result = null;
+            if (object != null) {
+                result = (V) field.get(object);
             }
-            V result = (V) field.get(object);
             return result;
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -42,45 +42,21 @@ public class GremlinFieldPropertyAccessor<V> extends AbstractGremlinFieldPropert
     public void set(Object object, V val) {
 
         try {
-
-            if (parentAccessor != null) {
-                Object embeddedObj = parentAccessor.get(object);
-                if (embeddedObj == null) {
-                    embeddedObj = parentAccessor.newInstance();
-                    parentAccessor.set(object, embeddedObj);
-                }
-                object = embeddedObj;
+            object = getEmbeddedObject(object, true);
+            if (object != null) {
+                field.set(object, val);
             }
-            field.set(object, val);
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
-    public Object newInstance() {
-        try {
-            return field.getType().newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GremlinFieldPropertyAccessor{");
+        sb.append("field=").append(field);
+        sb.append(", embeddedAccessor=").append(embeddedAccessor);
+        sb.append('}');
+        return sb.toString();
     }
-
-    /**
-     * @return the root Field of this GremlinEmbeddedFieldAccessor
-     */
-    public Field getRootField() {
-        GremlinFieldPropertyAccessor rootFieldAccessor = this;
-        GremlinFieldPropertyAccessor parentFieldAccessor = rootFieldAccessor.getParentAccessor();
-        while (parentFieldAccessor != null) {
-            rootFieldAccessor = parentFieldAccessor;
-            parentFieldAccessor = rootFieldAccessor.getParentAccessor();
-        }
-        return rootFieldAccessor.getField();
-    }
-
-    public GremlinFieldPropertyAccessor getParentAccessor() {
-        return parentAccessor;
-    }
-
 }

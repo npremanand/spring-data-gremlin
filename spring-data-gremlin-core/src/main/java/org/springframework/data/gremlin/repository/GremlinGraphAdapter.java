@@ -1,14 +1,18 @@
 package org.springframework.data.gremlin.repository;
 
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gremlin.schema.GremlinSchema;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.Iterator;
 
 /**
  * Base class for creating verticies and edges on the Graph. This class can be
@@ -19,7 +23,7 @@ public class GremlinGraphAdapter<G extends Graph> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GremlinGraphAdapter.class);
 
     @Autowired
-    private GremlinGraphFactory<G> graphFactory;
+    protected GremlinGraphFactory<G> graphFactory;
 
     @Transactional(readOnly = false)
     public Vertex createVertex(String className) {
@@ -30,23 +34,79 @@ public class GremlinGraphAdapter<G extends Graph> {
     @Transactional(readOnly = false)
     public Vertex createVertex(G graph, String className) {
         LOGGER.info("CREATING VERTEX: " + className);
-        Vertex vertex = graph.addVertex(null);
+        Vertex vertex = graph.addVertex(className);
         return vertex;
     }
 
     @Transactional(readOnly = true)
-    public Vertex findVertexById(String id) {
-        G graph = graphFactory.graph();
-        Vertex playerVertex = graph.getVertex(decodeId(id));
+    public Vertex findOrCreateVertex(String id, String className) {
+        Vertex playerVertex = findVertexById(id);
         if (playerVertex == null) {
-            playerVertex = graph.getVertex(id);
+            playerVertex = createVertex(className);
         }
         return playerVertex;
     }
 
     @Transactional(readOnly = true)
+    public Vertex findVertexById(String id) {
+        if (id == null) {
+            return null;
+        }
+        G graph = graphFactory.graph();
+        Vertex playerVertex = null;
+        Iterator<Vertex> it = graph.vertices(decodeId(id));
+        if (it == null || !it.hasNext()) {
+            it = graph.vertices(id);
+        }
+
+        if (it != null && it.hasNext()) {
+            playerVertex = it.next();
+        }
+        return playerVertex;
+    }
+
+    public Element refresh(Element element) {
+        return element;
+    }
+
+    @Transactional(readOnly = true)
+    public Edge findEdgeById(String id) {
+        G graph = graphFactory.graph();
+        Edge edge = null;
+        Iterator<Edge> it = graph.edges(decodeId(id));
+        if (it == null || !it.hasNext()) {
+            it = graph.edges(id);
+        }
+        if (it != null && it.hasNext()) {
+            edge = it.next();
+        }
+        return edge;
+    }
+
+    /**
+     * Assumes the Vertex exists
+     * @param id
+     * @return
+     */
+    @Transactional(readOnly = true)
     public Vertex getVertex(String id) {
-        return graphFactory.graph().getVertex(id);
+        if (id == null) {
+            return null;
+        }        
+        return graphFactory.graph().vertices(id).next();
+    }
+
+    /**
+     * Assumes the Edge exists
+     * @param id
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public Edge getEdge(String id) {
+        if (id == null) {
+            return null;
+        }
+        return graphFactory.graph().edges(id).next();
     }
 
     @Transactional(readOnly = false)
@@ -56,18 +116,19 @@ public class GremlinGraphAdapter<G extends Graph> {
 
     @Transactional(readOnly = false)
     public Edge addEdge(Object o, Vertex outVertex, Vertex inVertex, String name) {
+        LOGGER.debug("Creating edge " + outVertex + " -> " + inVertex + "...");
         Edge edge = outVertex.addEdge(name, inVertex);
         return edge;
     }
 
     @Transactional(readOnly = false)
     public void removeEdge(Edge edge) {
-        graphFactory.graph().removeEdge(edge);
+        edge.remove();
     }
 
     @Transactional(readOnly = false)
     public void removeVertex(Vertex vertexToDelete) {
-        graphFactory.graph().removeVertex(vertexToDelete);
+        vertexToDelete.remove();
     }
 
     public String encodeId(String id) {
@@ -78,4 +139,7 @@ public class GremlinGraphAdapter<G extends Graph> {
         return id;
     }
 
+    public boolean isValidId(String id) {
+        return !StringUtils.isEmpty(id);
+    }
 }

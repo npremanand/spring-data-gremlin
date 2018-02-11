@@ -1,14 +1,18 @@
 package org.springframework.data.gremlin.repository;
 
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.gremlin.schema.GremlinEdgeSchema;
 import org.springframework.data.gremlin.schema.GremlinSchema;
+import org.springframework.data.gremlin.schema.property.GremlinAdjacentProperty;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,47 +47,106 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
         this.schema = schema;
     }
 
+    //    @Transactional(readOnly = false)
+    //    public Element create(Graph graph, final T object) {
+    //        final Element element = graphAdapter.createVertex(graph, schema.getClassName());
+    //        schema.copyToGraph(graphAdapter, element, object);
+    //        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+    //            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+    //                @Override
+    //                public void afterCommit() {
+    //                    schema.setObjectId(object, element);
+    //                }
+    //            });
+    //        }
+    //        return element;
+    //    }
+
     @Transactional(readOnly = false)
-    public Vertex create(Graph graph, final T object) {
-        final Vertex vertex = graphAdapter.createVertex(graph, schema.getClassName());
-        schema.copyToVertex(graphAdapter, vertex, object);
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    schema.setObjectId(object, vertex);
-                }
-            });
+    private Element create(Graph graph, final T object, Object... noCascade) {
+        Element element;
+        if (schema.isVertexSchema()) {
+            element = graphAdapter.createVertex(graph, schema.getClassName());
+            schema.copyToGraph(graphAdapter, element, object, noCascade);
+        } else if (schema.isEdgeSchema()) {
+            GremlinEdgeSchema edgeSchema = (GremlinEdgeSchema) schema;
+            GremlinAdjacentProperty adjacentOutProperty = edgeSchema.getOutProperty();
+
+            Vertex outVertex = null;
+            Vertex inVertex = null;
+
+            Object outObject = adjacentOutProperty.getAccessor().get(object);
+            if (outObject != null) {
+                String outId = adjacentOutProperty.getRelatedSchema().getObjectId(outObject);
+                outVertex = graphAdapter.findOrCreateVertex(outId, adjacentOutProperty.getRelatedSchema().getClassName());
+            }
+
+            GremlinAdjacentProperty adjacentInProperty = edgeSchema.getInProperty();
+            Object inObject = adjacentInProperty.getAccessor().get(object);
+            if (inObject != null) {
+                String inId = adjacentInProperty.getRelatedSchema().getObjectId(inObject);
+                inVertex = graphAdapter.findOrCreateVertex(inId, adjacentInProperty.getRelatedSchema().getClassName());
+            }
+
+            element = graphAdapter.addEdge(null, outVertex, inVertex, schema.getClassName());
+
+            schema.copyToGraph(graphAdapter, element, object, noCascade);
+        } else {
+            throw new IllegalStateException("Schema is neither EDGE nor VERTEX!");
         }
-        return vertex;
+        return element;
     }
 
     @Transactional(readOnly = false)
-    public T save(Graph graph, T object) {
+    public T save(Graph graph, T object, Object... noCascade) {
 
         String id = schema.getObjectId(object);
         if (StringUtils.isEmpty(id)) {
             create(graph, object);
         } else {
-            Vertex vertex = graph.getVertex(schema.decodeId(id));
-            if (vertex == null) {
+            Element element;
+            if (schema.isVertexSchema()) {
+                element = graphAdapter.getVertex(schema.decodeId(id));
+            } else if (schema.isEdgeSchema()) {
+                element = graphAdapter.getEdge(schema.decodeId(id));
+            } else {
+                throw new IllegalStateException("Schema is neither EDGE nor VERTEX!");
+            }
+            if (element == null) {
                 throw new IllegalStateException(String.format("Could not save %s with id %s, as it does not exist.", object, id));
             }
-            schema.copyToVertex(graphAdapter, vertex, object);
+            schema.copyToGraph(graphAdapter, element, object, noCascade);
         }
         return object;
     }
 
+    @Override
+    public <S extends T> S save(S entity) {
+        return save(entity, new Object[0]);
+    }
+
     @Transactional(readOnly = false)
     @Override
-    public <S extends T> S save(S s) {
+    public <S extends T> S save(final S s, final Object... noCascade) {
+
         Graph graph = dbf.graph();
 
         String id = schema.getObjectId(s);
-        if (!StringUtils.isEmpty(id)) {
-            save(graph, s);
+        if (graphAdapter.isValidId(id)) {
+            save(graph, s, noCascade);
         } else {
-            create(graph, s);
+            create(graph, s, noCascade);
+
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        if (!graphAdapter.isValidId(schema.getObjectId(s))) {
+//                            throw dbf.getForceRetryException();
+                        }
+                    }
+                });
+            }
         }
         return s;
 
@@ -101,10 +164,17 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
     @Override
     public T findOne(String id) {
         T object = null;
-        Vertex vertex = graphAdapter.findVertexById(id);
+        Element element;
+        if (schema.isVertexSchema()) {
+            element = graphAdapter.findVertexById(id);
+        } else if (schema.isEdgeSchema()) {
+            element = graphAdapter.findEdgeById(id);
+        } else {
+            throw new IllegalStateException("Schema is neither VERTEX nor EDGE!");
+        }
 
-        if (vertex != null) {
-            object = schema.loadFromVertex(vertex);
+        if (element != null) {
+            object = schema.loadFromGraph(graphAdapter, element);
         }
 
         return object;
@@ -137,8 +207,13 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
     @Transactional(readOnly = false)
     @Override
     public void delete(String id) {
-        Vertex v = graphAdapter.findVertexById(id);
-        dbf.graph().removeVertex(v);
+        if (schema.isVertexSchema()) {
+            Vertex v = graphAdapter.findVertexById(id);
+            v.remove();;
+        } else if (schema.isEdgeSchema()) {
+            Edge v = graphAdapter.findEdgeById(id);
+            v.remove();
+        }
     }
 
     @Transactional(readOnly = false)

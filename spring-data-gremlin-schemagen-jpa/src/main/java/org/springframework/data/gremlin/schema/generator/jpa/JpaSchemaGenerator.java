@@ -6,7 +6,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.gremlin.annotation.Index;
 import org.springframework.data.gremlin.schema.GremlinSchema;
 import org.springframework.data.gremlin.schema.generator.AnnotatedSchemaGenerator;
-import org.springframework.data.gremlin.schema.generator.DefaultSchemaGenerator;
+import org.springframework.data.gremlin.schema.generator.BasicSchemaGenerator;
 import org.springframework.data.gremlin.schema.generator.SchemaGeneratorException;
 import org.springframework.data.gremlin.schema.property.encoder.GremlinPropertyEncoder;
 import org.springframework.util.ReflectionUtils;
@@ -17,7 +17,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 /**
- * A concrete {@link DefaultSchemaGenerator} allowing for annotating entities with the commonly used JPA 2.0
+ * A concrete {@link BasicSchemaGenerator} allowing for annotating entities with the commonly used JPA 2.0
  * specified schema generation annotations.
  * <br/>
  * Annotations currently implemented:
@@ -57,7 +57,7 @@ import java.lang.reflect.Field;
  *
  * @author Gman
  */
-public class JpaSchemaGenerator extends DefaultSchemaGenerator implements AnnotatedSchemaGenerator {
+public class JpaSchemaGenerator extends BasicSchemaGenerator implements AnnotatedSchemaGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaSchemaGenerator.class);
 
@@ -76,6 +76,7 @@ public class JpaSchemaGenerator extends DefaultSchemaGenerator implements Annota
      * @param clazz The Class to find the name of
      * @return The vertex name of the class
      */
+    @Override
     protected String getVertexName(Class<?> clazz) {
 
         String className = super.getVertexName(clazz);
@@ -120,8 +121,8 @@ public class JpaSchemaGenerator extends DefaultSchemaGenerator implements Annota
     @Override
     protected Class<?> getEnumType(Field field) {
         Enumerated enumerated = AnnotationUtils.getAnnotation(field, Enumerated.class);
-        if (enumerated != null && enumerated.value() == EnumType.STRING) {
-            return String.class;
+        if (enumerated != null && enumerated.value() == EnumType.ORDINAL) {
+            return Integer.class;
         } else {
             return super.getEnumType(field);
         }
@@ -156,8 +157,8 @@ public class JpaSchemaGenerator extends DefaultSchemaGenerator implements Annota
     }
 
     @Override
-    protected String getPropertyName(Field field, Field rootEmbeddedField) {
-        String name = field.getName();
+    protected String getPropertyName(Field field, Field rootEmbeddedField, Class<?> schemaClass) {
+        String name = super.getPropertyName(field, rootEmbeddedField, schemaClass);
 
         // If annotated with @Column, use the name parameter of the annotation
         Column column = AnnotationUtils.getAnnotation(field, Column.class);
@@ -214,9 +215,11 @@ public class JpaSchemaGenerator extends DefaultSchemaGenerator implements Annota
         return null;
     }
 
+    @Override
     protected boolean isLinkField(Class<?> cls, Field field) {
-        return isEntityClass(cls) && (AnnotationUtils.getAnnotation(field, OneToOne.class) != null || AnnotationUtils.getAnnotation(field, ManyToOne.class) != null);
+        return isVertexClass(cls) && (AnnotationUtils.getAnnotation(field, OneToOne.class) != null || AnnotationUtils.getAnnotation(field, ManyToOne.class) != null);
     }
+
 
     @Override
     protected boolean isLinkOutward(Class<?> cls, Field field) {
@@ -236,28 +239,35 @@ public class JpaSchemaGenerator extends DefaultSchemaGenerator implements Annota
 
         OneToMany oneToMany = AnnotationUtils.getAnnotation(field, OneToMany.class);
         if (oneToMany != null) {
-            return false;
+            return oneToMany.mappedBy().length() == 0;
         }
 
         return true;
 
     }
 
-    protected boolean isCollectionField(Class<?> cls, Field field) {
-        return super.isCollectionField(cls, field) && AnnotationUtils.getAnnotation(field, OneToMany.class) != null;
+    @Override
+    protected boolean isCollectionField(Class<?> cls, Field field, GremlinSchema schema) {
+        return super.isCollectionField(cls, field, schema) && AnnotationUtils.getAnnotation(field, OneToMany.class) != null;
     }
 
+    @Override
     protected boolean isEmbeddedField(Class<?> cls, Field field) {
         return isEmbeddedClass(cls) && AnnotationUtils.getAnnotation(field, Embedded.class) != null;
     }
 
     @Override
-    public Class<? extends Annotation> getEntityAnnotationType() {
+    public Class<? extends Annotation> getVertexAnnotationType() {
         return Entity.class;
     }
 
     @Override
     public Class<? extends Annotation> getEmbeddedAnnotationType() {
         return Embeddable.class;
+    }
+
+    @Override
+    public Class<? extends Annotation> getEdgeAnnotationType() {
+        return null;
     }
 }

@@ -20,8 +20,8 @@ public class JpaSchemaGeneratorTest {
     @Before
     public void setUp() throws Exception {
         generator = new JpaSchemaGenerator();
-        generator.setEntities(TestEntity.class, LinkedTestEntity.class);
-        generator.setEmbedded(EmbeddedTestEntity.class, MultiEmbeddedTestEntity.class);
+        generator.setVertexClasses(TestEntity.class, LinkedTestEntity.class);
+        generator.setEmbeddedClasses(EmbeddedTestEntity.class, MultiEmbeddedTestEntity.class);
     }
 
     @Test
@@ -53,6 +53,7 @@ public class JpaSchemaGeneratorTest {
         assertFalse(propNames.contains("id"));
         assertFalse(propNames.contains("name"));
         assertFalse(propNames.contains("tranny"));
+        assertFalse(propNames.contains("staty"));
         assertFalse(propNames.contains("anotherTranny"));
 
     }

@@ -1,6 +1,8 @@
 package org.springframework.data.gremlin.repository.tinker;
 
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -15,9 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
- * Titan specific extension of the {@link SimpleGremlinRepository} providing custom implementations of {@code count()}, {@code deleteAll()},
+ * Tinker specific extension of the {@link SimpleGremlinRepository} providing custom implementations of {@code count()}, {@code deleteAll()},
  * {@code findAll(Pageable)} and {@code findAll()}.
  *
  * @author Gman
@@ -38,7 +41,7 @@ public class TinkerGremlinRepository<T> extends SimpleGremlinRepository<T> {
     public long count() {
         long count = 0;
         try {
-            for (Vertex v : getVertices()) {
+            for (Element el : findAllElementsForSchema()) {
                 count++;
             }
         } catch (Exception e) {
@@ -49,8 +52,8 @@ public class TinkerGremlinRepository<T> extends SimpleGremlinRepository<T> {
     @Transactional
     @Override
     public void deleteAll() {
-        for (Vertex vertex : getVertices()) {
-            vertex.remove();
+        for (Element element : findAllElementsForSchema()) {
+            element.remove();
         }
     }
 
@@ -60,9 +63,9 @@ public class TinkerGremlinRepository<T> extends SimpleGremlinRepository<T> {
         int total = 0;
         int prevOffset = pageable.getOffset();
         int offset = pageable.getOffset() + pageable.getPageSize();
-        for (Vertex vertex : getVertices()) {
+        for (Element element : findAllElementsForSchema()) {
             if (total >= prevOffset && total < offset) {
-                result.add(schema.loadFromVertex(vertex));
+                result.add(schema.loadFromGraph(graphAdapter, element));
             }
             total++;
         }
@@ -72,13 +75,44 @@ public class TinkerGremlinRepository<T> extends SimpleGremlinRepository<T> {
     @Override
     public Iterable<T> findAll() {
         List<T> result = new ArrayList<T>();
-        for (Vertex vertex : getVertices()) {
-            result.add(schema.loadFromVertex(vertex));
+        for (Element edge : findAllElementsForSchema()) {
+            result.add(schema.loadFromGraph(graphAdapter, edge));
         }
         return result;
     }
 
-    private Iterable<Vertex> getVertices() {
-        return graphFactory.graph().getVertices("label", schema.getClassName());
+    public Iterable<Element> findAllElementsForSchema() {
+
+        if (schema.isVertexSchema()) {
+            return findAllVerticiesForSchema();
+        } else if (schema.isEdgeSchema()) {
+            return findAllEdgesForSchema();
+        } else {
+            throw new IllegalStateException("GremlinSchema is neither VERTEX or EDGE!!");
+        }
     }
+
+    public Iterable<Element> findAllVerticiesForSchema() {
+        final List<Element> result = new ArrayList<>();
+        graphFactory.graph().traversal().V().hasLabel(schema.getClassName()).forEachRemaining(new Consumer<Vertex>() {
+            @Override
+            public void accept(Vertex vertex) {
+
+                result.add(vertex);
+            }
+        });
+        return result;
+    }
+
+    public Iterable<Element> findAllEdgesForSchema() {
+        final List<Element> result = new ArrayList<>();
+        graphFactory.graph().traversal().E().hasLabel(schema.getClassName()).forEachRemaining(new Consumer<Edge>() {
+            @Override
+            public void accept(Edge edge) {
+                result.add(edge);
+            }
+        });
+        return result;
+    }
+
 }

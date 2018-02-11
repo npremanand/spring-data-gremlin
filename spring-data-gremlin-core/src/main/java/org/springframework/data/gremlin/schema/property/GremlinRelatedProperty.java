@@ -1,8 +1,11 @@
 package org.springframework.data.gremlin.schema.property;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.springframework.data.gremlin.schema.GremlinBeanPostProcessor;
 import org.springframework.data.gremlin.schema.GremlinSchema;
 import org.springframework.data.gremlin.schema.property.mapper.GremlinPropertyMapper;
+
+import java.util.Collection;
 
 /**
  * <p>
@@ -32,12 +35,16 @@ public abstract class GremlinRelatedProperty<C> extends GremlinProperty<C> {
         MANY_TO_ONE
     }
 
+    private Direction direction;
     private GremlinSchema<C> relatedSchema;
+    private GremlinRelatedProperty relatedProperty;
+    private GremlinAdjacentProperty adjacentProperty;
     private CARDINALITY cardinality;
     private CASCADE_TYPE cascadeType;
 
-    public GremlinRelatedProperty(Class<C> cls, String name, GremlinPropertyMapper propertyMapper, CARDINALITY cardinality) {
+    public GremlinRelatedProperty(Class<C> cls, String name, Direction direction, GremlinPropertyMapper propertyMapper, CARDINALITY cardinality) {
         super(cls, name, propertyMapper);
+        this.direction = direction;
         this.cardinality = cardinality;
     }
 
@@ -47,6 +54,45 @@ public abstract class GremlinRelatedProperty<C> extends GremlinProperty<C> {
 
     public void setRelatedSchema(GremlinSchema<C> relatedSchema) {
         this.relatedSchema = relatedSchema;
+        Collection<GremlinProperty> properties = relatedSchema.getPropertyForType(getType());
+        if (properties != null) {
+            for (GremlinProperty property : properties) {
+                if (property instanceof GremlinRelatedProperty) {
+                    GremlinRelatedProperty relProp = (GremlinRelatedProperty) property;
+                    if (relProp.getDirection() == direction.opposite()) {
+                        if (this.relatedProperty == null || relProp.getName().equals(getName())) {
+                            this.relatedProperty = relProp;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (relatedSchema.isEdgeSchema()) {
+
+            for (Object propertyOfRelatedSchema : relatedSchema.getProperties()) {
+                if (propertyOfRelatedSchema instanceof GremlinAdjacentProperty) {
+                    // If the property has the same direction of the given property here it
+                    // means it is the opposite property of the @EntityRelationship
+                    if (((GremlinAdjacentProperty) propertyOfRelatedSchema).getDirection() == direction.opposite()) {
+                        adjacentProperty = (GremlinAdjacentProperty) propertyOfRelatedSchema;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public GremlinRelatedProperty getRelatedProperty() {
+        return relatedProperty;
+    }
+
+    public GremlinAdjacentProperty getAdjacentProperty() {
+        return adjacentProperty;
     }
 
     public CASCADE_TYPE getCascadeType() {

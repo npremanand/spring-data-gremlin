@@ -1,36 +1,169 @@
+buildscript {
+    repositories {
+        maven { url 'http://repo.spring.io/plugins-release' }
+    }
+    dependencies {
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.6'
+    }
+}
+
+ext {
+
+    springVersion = "4.3.7.RELEASE"
+    gremlinVersion = "3.3.0-SNAPSHOT"
+    jacksonVersion = "2.8.8"
+}
+
+
 allprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
+    apply plugin: 'eclipse'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    apply plugin: 'propdeps'
+    apply plugin: 'propdeps-maven'
+    apply plugin: 'propdeps-idea'
+    apply plugin: 'propdeps-eclipse'
 
-    sourceCompatibility = 1.6
-    version = '1.0.0-SNAPSHOT'
-    group = 'org.springframework.data'
+    sourceCompatibility = 1.7
+    version = '0.2.0-SNAPSHOT'
+    group = 'com.github.gjrwebber'
 
     repositories {
         mavenLocal()
         maven { url 'https://repo.spring.io/libs-release' }
         maven { url 'https://repo.spring.io/libs-snapshot' }
+        maven { url 'http://repository.apache.org/snapshots' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://oss.sonatype.org/service/local/staging/deploy/maven2' }
+        maven { url 'https://maven.oracle.com'}
+        maven { url "https://jitpack.io" }
         mavenCentral()
     }
 
     dependencies {
-        compile('org.springframework:spring-core:4.1.6.RELEASE')
-        compile('org.springframework:spring-context:4.1.6.RELEASE')
-        compile('org.springframework:spring-tx:4.1.6.RELEASE')
-        compile('org.springframework.data:spring-data-commons:1.10.0.RELEASE')
-        compile('com.tinkerpop.blueprints:blueprints-core:2.6.0')
-        compile('com.tinkerpop.gremlin:gremlin-java:2.6.0')
-        compile('com.tinkerpop.gremlin:gremlin-groovy:2.6.0')
+        compile("org.springframework:spring-core:${springVersion}")
+        compile("org.springframework:spring-context:${springVersion}")
+        compile("org.springframework:spring-tx:${springVersion}")
+        compile('org.springframework.data:spring-data-commons:1.13.1.RELEASE')
+        compile("org.apache.tinkerpop:gremlin-core:${gremlinVersion}") {
+            exclude group: 'com.carrotsearch'
+        }
+        compile('com.carrotsearch:hppc:0.6.0')
+        compile("org.apache.tinkerpop:gremlin-driver:${gremlinVersion}") {
+            exclude group: 'com.carrotsearch'
+        }
+        compile("org.apache.tinkerpop:gremlin-groovy:${gremlinVersion}") {
+            exclude group: 'com.carrotsearch'
+        }
+        compile("org.apache.tinkerpop:tinkergraph-gremlin:${gremlinVersion}") {
+            exclude group: 'com.carrotsearch'
+        }
+
         compile('org.apache.commons:commons-collections4:4.0')
         compile('org.apache.commons:commons-lang3:3.4')
-        compile('org.reflections:reflections:0.9.9-RC1')
+        compile('org.reflections:reflections:0.9.9-RC1') {
+            exclude group: 'com.google.guava'
+        }
+
+        compile('com.google.guava:guava:19.0')
+        compile("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
+        compile("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+        compile("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+        compile('org.slf4j:slf4j-simple:1.7.7')
         testCompile('junit:junit:4.12')
-        testCompile('org.mockito:mockito-core:1.10.8')
-        testCompile('org.springframework:spring-test:4.1.6.RELEASE')
+        testCompile('org.mockito:mockito-core:1.10.19')
+        testCompile("org.springframework:spring-test:${springVersion}")
+
     }
 
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar, sourcesJar
+    }
+
+    signing {
+        sign configurations.archives
+    }
+
+    javadoc {
+        failOnError = false
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                //beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+//                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+//                    authentication(userName: ossrhUsername, password: ossrhPassword)
+//                }
+//
+//                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+//                    authentication(userName: ossrhUsername, password: ossrhPassword)
+//                }
+
+                pom.project {
+                    name 'Spring Data Gremlin'
+                    packaging 'jar'
+                    description 'Spring Data module for Gremlin repositories.'
+                    url 'https://github.com/gjrwebber/spring-data-gremlin'
+
+                    scm {
+                        connection 'scm:git:git@github.com:gjrwebber/spring-data-gremlin.git'
+                        developerConnection 'scm:git:git@github.com:gjrwebber/spring-data-gremlin.git'
+                        url 'git@github.com:gjrwebber/spring-data-gremlin.git'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            comments '\n\t\t\tCopyright 2008-2013 the original author or authors.\n' +
+                                    '\n' +
+                                    '\t\t\tLicensed under the Apache License, Version 2.0 (the "License");\n' +
+                                    '\t\t\tyou may not use this file except in compliance with the License.\n' +
+                                    '\t\t\tYou may obtain a copy of the License at\n' +
+                                    '\n' +
+                                    '\t\t\t\t http://www.apache.org/licenses/LICENSE-2.0\n' +
+                                    '\n' +
+                                    '\t\t\tUnless required by applicable law or agreed to in writing, software\n' +
+                                    '\t\t\tdistributed under the License is distributed on an "AS IS" BASIS,\n' +
+                                    '\t\t\tWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n' +
+                                    '\t\t\timplied.\n' +
+                                    '\t\t\tSee the License for the specific language governing permissions and\n' +
+                                    '\t\t\tlimitations under the License.\n\t\t'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'gjrwebber'
+                            name 'Graham Webber'
+                            email 'gjrwebber@gmail.com'
+                        }
+                        developer {
+                            id 'zifnab87'
+                            name 'Michail Michailidis'
+                            email 'mmichaelid@gmail.com'
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }
+
 
