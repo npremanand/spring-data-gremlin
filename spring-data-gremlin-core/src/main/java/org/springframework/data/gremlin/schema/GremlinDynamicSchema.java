@@ -1,8 +1,6 @@
 package org.springframework.data.gremlin.schema;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.property.accessor.GremlinFieldPropertyAccessor;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -24,10 +22,8 @@ import java.util.Map;
  */
 public class GremlinDynamicSchema<V> extends GremlinVertexSchema<V> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GremlinDynamicSchema.class);
-
-    public GremlinDynamicSchema(Class<V> classType) {
-        super(classType);
+    public GremlinDynamicSchema(Class<V> classType, GremlinSchema<? super V> superSchema) {
+        super(classType, superSchema);
     }
 
     public void cascadeCopyToGraph(GremlinGraphAdapter graphAdapter, Element element, final Object obj, Map<Object, Element> noCascadingMap) {

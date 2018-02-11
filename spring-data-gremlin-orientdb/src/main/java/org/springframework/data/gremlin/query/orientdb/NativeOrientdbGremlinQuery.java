@@ -1,8 +1,5 @@
 package org.springframework.data.gremlin.query.orientdb;
 
-import com.orientechnologies.orient.core.command.OCommand;
-import com.orientechnologies.orient.core.command.OCommandRequest;
-import com.orientechnologies.orient.core.sql.OCommandSQL;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.gremlin.query.AbstractNativeGremlinQuery;
 import org.springframework.data.gremlin.query.GremlinQueryMethod;
@@ -20,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 /**
  * Concrete {@link AbstractNativeGremlinQuery} handling OrientDB native queries.
@@ -27,19 +25,22 @@ import java.util.Map;
  * @author Gman
  */
 public class NativeOrientdbGremlinQuery extends AbstractNativeGremlinQuery {
-
     private OrientDBGremlinGraphFactory orientGraphFactory;
+    private SimpleDateFormat formatter;
 
-    public NativeOrientdbGremlinQuery(GremlinGraphFactory dbf, GremlinQueryMethod method, GremlinSchemaFactory schemaFactory, GremlinGraphAdapter graphAdapter, String query) {
+    public NativeOrientdbGremlinQuery(GremlinGraphFactory dbf,
+                                      GremlinQueryMethod method,
+                                      GremlinSchemaFactory schemaFactory,
+                                      GremlinGraphAdapter graphAdapter,
+                                      String query) {
         super(dbf, method, schemaFactory, graphAdapter, query);
         this.orientGraphFactory = (OrientDBGremlinGraphFactory) dbf;
     }
 
     @Override
     protected Object doRunQuery(DefaultParameters parameters, Object[] values, boolean ignorePaging) {
-
         String queryString = query;
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map<String, Object> params = new HashMap<>();
         if (parameters != null) {
             for (Object obj : parameters) {
                 Parameter param = (Parameter) obj;
@@ -55,58 +56,77 @@ public class NativeOrientdbGremlinQuery extends AbstractNativeGremlinQuery {
                 } else {
                     queryString = queryString.replaceFirst(placeholder, paramName);
                 }
-
                 params.put(paramName, val);
             }
-
             // TODO: Hack until OLuceneSpatialIndexManager.searchIntersect handles the context
             //        if (queryString.contains("$spatial")) {
-            for (String key : params.keySet()) {
-                queryString = queryString.replaceAll("\\b" + key + "\\b", convertObject(params.get(key)));
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                String escapedValue = Matcher.quoteReplacement(convertObject(entry.getValue()));
+                queryString = queryString.replaceAll("\\b" + entry.getKey() + "\\b", escapedValue);
             }
             //        }
-
             ParametersParameterAccessor accessor = new ParametersParameterAccessor(parameters, values);
             Pageable pageable = accessor.getPageable();
             if (pageable != null && !ignorePaging) {
                 queryString = String.format("%s SKIP %d LIMIT %d", queryString, pageable.getOffset(), pageable.getPageSize());
             }
-
         }
-
         return run(queryString, params);
     }
 
-    public Object run(String queryString, Map<String, Object> params) {
-
+    private Object run(String queryString, Map<String, Object> params) {
         Assert.hasLength(queryString);
-
         try {
-
-            // TODO I don't know how to pass parameters in the orientdb query
-            Object result = orientGraphFactory.graph().executeSql(queryString);
-            return result;
+            return orientGraphFactory.graph().executeSql(queryString, params);
         } catch (RuntimeException e) {
             e.printStackTrace();
             throw e;
         }
     }
 
-    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private String escape(String input) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            switch (c) {
+                case '\'':
+                    builder.append("\\'");
+                    break;
+                case '\\':
+                    builder.append("\\");
+                    break;
+                case '\n':
+                    builder.append("\\n");
+                    break;
+                case '\t':
+                    builder.append("\\t");
+                    break;
+                case '\r':
+                    builder.append("\\r");
+                    break;
+                default:
+                    builder.append(c);
+            }
+        }
+        return builder.toString();
+    }
 
     // TODO: Hack until OLuceneSpatialIndexManager.searchIntersect handles the context
     private String convertObject(Object val) {
         if (val instanceof Date) {
+            if (formatter == null) {
+                formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            }
             return "'" + formatter.format(val) + "'";
         } else if (val instanceof String) {
-            return "'" + val + "'";
+            return "'" + escape((String) val) + "'";
         } else if (val instanceof Double) {
             return val + "d";
         } else if (val instanceof Float) {
             return val + "f";
         } else {
             GremlinSchema schema = schemaFactory.getSchema(val.getClass());
-            if(schema != null) {
+            if (schema != null) {
                 return schema.getGraphId(val);
             } else {
                 return val.toString();

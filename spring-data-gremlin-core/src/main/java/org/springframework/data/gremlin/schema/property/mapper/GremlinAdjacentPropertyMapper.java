@@ -8,9 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.property.GremlinAdjacentProperty;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * A {@link GremlinPropertyMapper} for mapping {@link GremlinAdjacentProperty}s.

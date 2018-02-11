@@ -1,7 +1,6 @@
 package org.springframework.data.gremlin.query;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
@@ -9,9 +8,6 @@ import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.data.repository.query.DefaultParameters;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.parser.PartTree;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * A concrete {@link AbstractGremlinQuery} implementation based on a {@link PartTree}.

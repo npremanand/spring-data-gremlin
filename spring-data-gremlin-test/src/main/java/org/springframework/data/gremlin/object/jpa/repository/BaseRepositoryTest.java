@@ -8,6 +8,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -17,10 +18,10 @@ import org.springframework.data.gremlin.object.jpa.TestService;
 import org.springframework.data.gremlin.object.jpa.domain.*;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-import org.springframework.test.context.transaction.TransactionConfiguration;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -35,7 +36,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TransactionConfiguration(defaultRollback = true)
+@Rollback
 @TestExecutionListeners(
         inheritListeners = false,
         listeners = { DependencyInjectionTestExecutionListener.class })
@@ -53,10 +54,15 @@ public abstract class BaseRepositoryTest {
     protected LocationRepository locationRepository;
 
     @Autowired
-    protected GremlinGraphFactory factory;
+    protected GremlinGraphFactory<Graph> factory;
 
     @Autowired
     protected TestService testService;
+
+    @BeforeClass
+    public static void setup() {
+        System.setProperty("blueprints.orientdb.autoStartTx", "false");
+    }
 
     @Before
     public void before() {

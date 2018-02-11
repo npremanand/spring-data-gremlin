@@ -1,8 +1,6 @@
 package org.springframework.data.gremlin.schema;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.schema.property.GremlinAdjacentProperty;
 import org.springframework.data.gremlin.schema.property.GremlinProperty;
 import org.springframework.data.gremlin.schema.property.accessor.GremlinFieldPropertyAccessor;
@@ -21,14 +19,8 @@ import org.springframework.data.gremlin.schema.property.accessor.GremlinFieldPro
  */
 public class GremlinEdgeSchema<V> extends GremlinSchema<V> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GremlinEdgeSchema.class);
-
-    public GremlinEdgeSchema(Class<V> classType) {
-        super(classType);
-    }
-
-    public GremlinEdgeSchema() {
-        super();
+    public GremlinEdgeSchema(Class<V> classType, GremlinSchema<? super V> superSchema) {
+        super(classType, superSchema);
     }
 
     private GremlinAdjacentProperty outProperty;

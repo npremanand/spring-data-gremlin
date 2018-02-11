@@ -1,10 +1,10 @@
 package org.springframework.data.gremlin.repository;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gremlin.schema.GremlinEdgeSchema;
 import org.springframework.data.gremlin.schema.GremlinSchema;
+import org.springframework.data.gremlin.schema.LazyInitializationHandler;
 import org.springframework.data.gremlin.schema.property.GremlinAdjacentProperty;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 import org.springframework.stereotype.Repository;
@@ -62,8 +63,7 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
     //        return element;
     //    }
 
-    @Transactional(readOnly = false)
-    private Element create(Graph graph, final T object, Object... noCascade) {
+    private Element create(GremlinSchema<? extends T> schema, Graph graph, final T object, Object... noCascade) {
         Element element;
         if (schema.isVertexSchema()) {
             element = graphAdapter.createVertex(graph, schema.getClassName());
@@ -99,10 +99,14 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
 
     @Transactional(readOnly = false)
     public T save(Graph graph, T object, Object... noCascade) {
+        GremlinSchema<? extends T> schema = this.schema.findMostSpecificSchema(object.getClass());
+        return save(schema, graph, object, noCascade);
+    }
 
+    public T save(GremlinSchema<? extends T> schema, Graph graph, T object, Object... noCascade) {
         String id = schema.getObjectId(object);
         if (StringUtils.isEmpty(id)) {
-            create(graph, object);
+            create(schema, graph, object);
         } else {
             Element element;
             if (schema.isVertexSchema()) {
@@ -131,11 +135,15 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
 
         Graph graph = dbf.graph();
 
+        GremlinSchema<? extends T> schema = this.schema.findMostSpecificSchema(s.getClass());
         String id = schema.getObjectId(s);
         if (graphAdapter.isValidId(id)) {
-            save(graph, s, noCascade);
+            if (!LazyInitializationHandler.isInitialized(s)) {
+                return s;
+            }
+            save(schema, graph, s, noCascade);
         } else {
-            create(graph, s, noCascade);
+            create(schema, graph, s, noCascade);
 
             if (TransactionSynchronizationManager.isSynchronizationActive()) {
                 TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -174,6 +182,7 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
         }
 
         if (element != null) {
+            GremlinSchema<? extends T> schema = this.schema.findMostSpecificSchema(element);
             object = schema.loadFromGraph(graphAdapter, element);
         }
 

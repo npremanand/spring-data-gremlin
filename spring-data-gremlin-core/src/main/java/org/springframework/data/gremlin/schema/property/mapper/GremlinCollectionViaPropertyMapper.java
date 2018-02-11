@@ -1,9 +1,9 @@
 package org.springframework.data.gremlin.schema.property.mapper;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
@@ -109,11 +109,12 @@ public class GremlinCollectionViaPropertyMapper extends GremlinLinkPropertyMappe
 
     @Override
     public <K> Object loadFromVertex(GremlinRelatedProperty property, GremlinGraphAdapter graphAdapter, Vertex vertex, Map<Object, Object> cascadingSchemas) {
-        return loadCollection(property.getRelatedSchema(), property, graphAdapter, vertex, cascadingSchemas);
+        return loadCollection(property, graphAdapter, vertex, cascadingSchemas);
     }
 
-    private <V> Set<V> loadCollection(final GremlinSchema<V> schema, final GremlinRelatedProperty property,  final GremlinGraphAdapter graphAdapter, final Vertex vertex, final Map<Object, Object> cascadingSchemas) {
-        final Set<V> collection = new HashSet<V>();
+    private <V> Set<V> loadCollection(GremlinRelatedProperty<V> property, GremlinGraphAdapter graphAdapter, Vertex vertex, Map<Object, Object> cascadingSchemas) {
+        final Set<V> collection = new HashSet<>();
+        GremlinSchema<V> schema = property.getRelatedSchema();
         vertex.edges(property.getDirection(), property.getRelatedSchema().getClassName()).forEachRemaining(new Consumer<Edge>() {
             @Override
             public void accept(Edge linkedEdge) {

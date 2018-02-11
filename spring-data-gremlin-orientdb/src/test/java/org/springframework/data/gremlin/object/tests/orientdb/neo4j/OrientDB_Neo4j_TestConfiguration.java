@@ -27,8 +27,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class OrientDB_Neo4j_TestConfiguration {
 
     @Bean
-    public OrientDBGremlinGraphFactory factory() {
-        OrientDBGremlinGraphFactory factory = new OrientDBGremlinGraphFactory();
+    public GremlinGraphFactory factory() {
+        GremlinGraphFactory factory = new OrientDBGremlinGraphFactory();
         factory.setUrl("memory:spring-data-orientdb-neo4j");
         factory.setUsername("admin");
         factory.setPassword("admin");

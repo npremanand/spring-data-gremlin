@@ -1,14 +1,10 @@
 package org.springframework.data.gremlin.query.execution;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.springframework.data.gremlin.query.AbstractGremlinQuery;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
 import org.springframework.data.repository.query.DefaultParameters;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * Executes the query to return the sum of entities.

@@ -12,7 +12,6 @@ import org.springframework.util.Assert;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -31,7 +30,7 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
     @Override
     public void copyToVertex(final GremlinRelatedProperty property, final GremlinGraphAdapter graphAdapter, final Vertex vertex, final Object val, final Map<Object, Object> cascadingSchemas) {
 
-        Vertex linkedVertex = null;
+        Vertex linkedVertex;
 
         // get the current edge for this property
         Iterator<Edge> edges = vertex.edges(property.getDirection(), property.getName());
@@ -54,7 +53,7 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
                 linkedVertex = graphAdapter.createVertex(property.getRelatedSchema());
             }
 
-            Assert.notNull(linkedVertex);
+            Assert.notNull(linkedVertex, "Creation of vertex failed from " + property.getRelatedSchema().getClassName());
             if (property.getDirection() == Direction.OUT) {
                 graphAdapter.addEdge(null, vertex, linkedVertex, property.getName());
             } else {

@@ -21,7 +21,7 @@ import static org.springframework.data.gremlin.schema.property.GremlinRelatedPro
  *
  * @author Gman
  */
-public class JanusSchemaWriter extends AbstractSchemaWriter {
+public class JanusSchemaWriter extends AbstractSchemaWriter<VertexLabel, EdgeLabel, PropertyKey, JanusGraphElement> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JanusSchemaWriter.class);
 
@@ -53,9 +53,9 @@ public class JanusSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected Object createVertexClass(GremlinSchema schema) throws Exception {
+    protected VertexLabel createVertexClass(GremlinSchema schema) throws Exception {
         VertexLabel vertexClass = mgmt.getVertexLabel(schema.getClassName());
-        if(vertexClass == null) {
+        if (vertexClass == null) {
             vertexClass = mgmt.makeVertexLabel(schema.getClassName()).make();
 //            mgmt.commit();
         }
@@ -63,9 +63,9 @@ public class JanusSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected Object createEdgeClass(GremlinSchema schema) throws Exception {
+    protected EdgeLabel createEdgeClass(GremlinSchema schema) throws Exception {
         EdgeLabel edgeClass = mgmt.getEdgeLabel(schema.getClassName());
-        if(edgeClass == null) {
+        if (edgeClass == null) {
             edgeClass = mgmt.makeEdgeLabel(schema.getClassName()).make();
 //            mgmt.commit();
         }
@@ -84,7 +84,7 @@ public class JanusSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected Object createEdgeClass(String name, Object outVertex, Object inVertex, CARDINALITY cardinality) throws SchemaWriterException {
+    protected EdgeLabel createEdgeClass(String name, VertexLabel outVertex, VertexLabel inVertex, CARDINALITY cardinality) throws SchemaWriterException {
 
         Multiplicity multiplicity = Multiplicity.SIMPLE;
         if (cardinality == CARDINALITY.ONE_TO_ONE) {
@@ -99,27 +99,27 @@ public class JanusSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected boolean isEdgeInProperty(Object edgeClass) {
+    protected boolean isEdgeInProperty(EdgeLabel edgeClass) {
         return true;
     }
 
     @Override
-    protected boolean isEdgeOutProperty(Object edgeClass) {
+    protected boolean isEdgeOutProperty(EdgeLabel edgeClass) {
         return true;
     }
 
     @Override
-    protected Object setEdgeOut(Object edgeClass, Object vertexClass) {
+    protected PropertyKey setEdgeOut(EdgeLabel edgeClass, VertexLabel vertexClass) {
         return null;
     }
 
     @Override
-    protected Object setEdgeIn(Object edgeClass, Object vertexClass) {
+    protected PropertyKey setEdgeIn(EdgeLabel edgeClass, VertexLabel vertexClass) {
         return null;
     }
 
     @Override
-    protected Object createProperty(Object parentElement, String name, Class<?> cls) {
+    protected PropertyKey createProperty(JanusGraphElement parentElement, String name, Class<?> cls) {
         if (cls == double.class) {
             cls = Double.class;
         }
@@ -127,14 +127,12 @@ public class JanusSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected void createNonUniqueIndex(Object prop) {
-        PropertyKey property = (PropertyKey) prop;
+    protected void createNonUniqueIndex(PropertyKey property) {
         mgmt.buildIndex(property.name(), Vertex.class).addKey(property).buildCompositeIndex();
     }
 
     @Override
-    protected void createUniqueIndex(Object prop) {
-        PropertyKey property = (PropertyKey) prop;
+    protected void createUniqueIndex(PropertyKey property) {
         mgmt.buildIndex(property.name(), Vertex.class).addKey(property).unique().buildCompositeIndex();
     }
 

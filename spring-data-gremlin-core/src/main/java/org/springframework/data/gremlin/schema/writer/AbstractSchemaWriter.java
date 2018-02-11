@@ -9,6 +9,10 @@ import org.springframework.data.gremlin.schema.property.GremlinProperty;
 import org.springframework.data.gremlin.schema.property.GremlinRelatedProperty;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import static org.springframework.data.gremlin.schema.property.GremlinRelatedProperty.CARDINALITY;
 
 /**
@@ -16,37 +20,43 @@ import static org.springframework.data.gremlin.schema.property.GremlinRelatedPro
  *
  * @author Gman
  */
-public abstract class AbstractSchemaWriter implements SchemaWriter {
+public abstract class AbstractSchemaWriter<V extends BASE, E extends BASE, P, BASE> implements SchemaWriter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSchemaWriter.class);
+    private Set<GremlinSchema<?>> handledSchemas = new HashSet<>();
 
     @Override
     public void writeSchema(GremlinGraphFactory tgf, GremlinSchema<?> schema) throws SchemaWriterException {
-
+        if (handledSchemas.contains(schema)) {
+            return;
+        }
+        if (schema.getSuperSchema() != null) {
+            writeSchema(tgf, schema.getSuperSchema());
+        }
         try {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("CREATING CLASS: " + schema.getClassName());
             }
-            Object element = null;
+            BASE element = null;
             if (schema.isVertexSchema()) {
                 element = createVertexClass(schema);
                 writeProperties(element, schema);
             } else if (schema.isEdgeSchema()) {
+                // TODO
+                System.out.println();
 //
-//                Object outVertex = createVertexClass(schema.getOutProperty().getRelatedSchema());
-//                Object inVertex = createVertexClass(schema.getInProperty().getRelatedSchema());
+//              V outVertex = createVertexClass(schema.getOutProperty().getRelatedSchema());
+//              V inVertex = createVertexClass(schema.getInProperty().getRelatedSchema());
 //
-//                element = createEdgeClass(schema.getClassName(), outVertex, inVertex, schema.getOutProperty().getCardinality());
+//              element = createEdgeClass(schema.getClassName(), outVertex, inVertex, schema.getOutProperty().getCardinality());
             } else {
-                throw new IllegalStateException("Unknown class type. Expected Vertex or Edge. "+schema);
+                throw new IllegalStateException("Unknown class type. Expected Vertex or Edge. " + schema);
             }
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("CREATED CLASS: " + schema.getClassName());
             }
-
-
-
+            handledSchemas.add(schema);
         } catch (Exception e) {
 
             rollback(schema);
@@ -57,10 +67,11 @@ public abstract class AbstractSchemaWriter implements SchemaWriter {
         }
     }
 
-    private void writeProperties(Object elementClass, GremlinSchema<?> schema) {
+    private void writeProperties(BASE elementClass, GremlinSchema<?> schema) {
         GremlinProperty latitude = null;
         GremlinProperty longitude = null;
-        for (GremlinProperty property : schema.getProperties()) {
+        for (Iterator<GremlinProperty> iterator = schema.getPropertyStream().iterator(); iterator.hasNext(); ) {
+            GremlinProperty property = iterator.next();
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("CREATING Property: " + property.getName());
@@ -84,23 +95,27 @@ public abstract class AbstractSchemaWriter implements SchemaWriter {
                             if (LOGGER.isDebugEnabled()) {
                                 LOGGER.debug("CREATING RELATED PROPERTY: " + schema.getClassName() + "." + property.getName());
                             }
-                            Object relatedVertex = createVertexClass(relatedProperty.getRelatedSchema());
+                            V relatedVertex = createVertexClass(relatedProperty.getRelatedSchema());
 
                             if (((GremlinRelatedProperty) property).getDirection() == Direction.OUT) {
-                                createEdgeClass(property.getName(), elementClass, relatedVertex, relatedProperty.getCardinality());
+                                //noinspection unchecked
+                                createEdgeClass(property.getName(), (V) elementClass, relatedVertex, relatedProperty.getCardinality());
                             } else {
-                                createEdgeClass(property.getName(), relatedVertex, elementClass, relatedProperty.getCardinality());
+                                //noinspection unchecked
+                                createEdgeClass(property.getName(), relatedVertex, (V) elementClass, relatedProperty.getCardinality());
                             }
                         } else {
                             if (LOGGER.isDebugEnabled()) {
                                 LOGGER.debug("CREATING RELATED EDGE: " + schema.getClassName() + "." + property.getName());
                             }
-                            Object relatedVertex = createVertexClass(relatedProperty.getAdjacentProperty().getRelatedSchema());
+                            V relatedVertex = createVertexClass(relatedProperty.getAdjacentProperty().getRelatedSchema());
 
                             if (((GremlinRelatedProperty) property).getDirection() == Direction.OUT) {
-                                createEdgeClass(relatedProperty.getRelatedSchema().getClassName(), elementClass, relatedVertex, relatedProperty.getCardinality());
+                                //noinspection unchecked
+                                createEdgeClass(relatedProperty.getRelatedSchema().getClassName(), (V) elementClass, relatedVertex, relatedProperty.getCardinality());
                             } else {
-                                createEdgeClass(relatedProperty.getRelatedSchema().getClassName(), relatedVertex, elementClass, relatedProperty.getCardinality());
+                                //noinspection unchecked
+                                createEdgeClass(relatedProperty.getRelatedSchema().getClassName(), relatedVertex, (V) elementClass, relatedProperty.getCardinality());
                             }
                         }
 
@@ -110,22 +125,22 @@ public abstract class AbstractSchemaWriter implements SchemaWriter {
                             LOGGER.debug("CREATING PROPERTY: " + schema.getClassName() + "." + property.getName());
                         }
                         // Standard property, primitive, String, Enum, byte[]
-                        Object prop = createProperty(elementClass, property.getName(), cls);
+                        P prop = createProperty(elementClass, property.getName(), cls);
 
                         switch (property.getIndex()) {
-                        case UNIQUE:
-                            createUniqueIndex(prop);
-                            break;
-                        case NON_UNIQUE:
-                            createNonUniqueIndex(prop);
-                            break;
-                        case SPATIAL_LATITUDE:
-                            latitude = property;
-                            break;
+                            case UNIQUE:
+                                createUniqueIndex(prop);
+                                break;
+                            case NON_UNIQUE:
+                                createNonUniqueIndex(prop);
+                                break;
+                            case SPATIAL_LATITUDE:
+                                latitude = property;
+                                break;
 
-                        case SPATIAL_LONGITUDE:
-                            longitude = property;
-                            break;
+                            case SPATIAL_LONGITUDE:
+                                longitude = property;
+                                break;
                         }
                     }
                 }
@@ -153,27 +168,27 @@ public abstract class AbstractSchemaWriter implements SchemaWriter {
 
     protected abstract boolean isPropertyAvailable(Object vertexClass, String name);
 
-    protected abstract Object createVertexClass(GremlinSchema schema) throws Exception;
+    protected abstract V createVertexClass(GremlinSchema schema) throws Exception;
 
-    protected abstract Object createEdgeClass(GremlinSchema schema) throws Exception;
+    protected abstract E createEdgeClass(GremlinSchema schema) throws Exception;
 
     protected abstract void rollback(GremlinSchema schema);
 
-    protected abstract Object createEdgeClass(String name, Object outVertex, Object inVertex, CARDINALITY cardinality) throws SchemaWriterException;
+    protected abstract E createEdgeClass(String name, V outVertex, V inVertex, CARDINALITY cardinality) throws SchemaWriterException;
 
-    protected abstract boolean isEdgeInProperty(Object edgeClass);
+    protected abstract boolean isEdgeInProperty(E edgeClass);
 
-    protected abstract boolean isEdgeOutProperty(Object edgeClass);
+    protected abstract boolean isEdgeOutProperty(E edgeClass);
 
-    protected abstract Object setEdgeOut(Object edgeClass, Object vertexClass);
+    protected abstract P setEdgeOut(E edgeClass, V vertexClass);
 
-    protected abstract Object setEdgeIn(Object edgeClass, Object vertexClass);
+    protected abstract P setEdgeIn(E edgeClass, V vertexClass);
 
-    protected abstract Object createProperty(Object parentElement, String name, Class<?> cls);
+    protected abstract P createProperty(BASE parentElement, String name, Class<?> cls);
 
-    protected abstract void createNonUniqueIndex(Object prop);
+    protected abstract void createNonUniqueIndex(P prop);
 
-    protected abstract void createUniqueIndex(Object prop);
+    protected abstract void createUniqueIndex(P prop);
 
     protected abstract void createSpatialIndex(GremlinSchema<?> schema, GremlinProperty latitude, GremlinProperty longitude);
 

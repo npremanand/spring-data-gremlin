@@ -24,8 +24,8 @@ import org.springframework.data.gremlin.tx.tinker.TinkerGremlinGraphFactory;
 public class Tinker_Core_TestConfiguration {
 
     @Bean
-    public TinkerGremlinGraphFactory factory() {
-        TinkerGremlinGraphFactory factory = new TinkerGremlinGraphFactory();
+    public GremlinGraphFactory factory() {
+        GremlinGraphFactory factory = new TinkerGremlinGraphFactory();
         return factory;
     }
 

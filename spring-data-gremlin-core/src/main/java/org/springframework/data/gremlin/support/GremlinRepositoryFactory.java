@@ -7,7 +7,6 @@ import org.springframework.data.gremlin.repository.GremlinRepository;
 import org.springframework.data.gremlin.repository.GremlinRepositoryContext;
 import org.springframework.data.gremlin.schema.GremlinSchema;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
-import org.springframework.data.gremlin.schema.property.accessor.GremlinIdFieldPropertyAccessor;
 import org.springframework.data.gremlin.schema.property.accessor.GremlinIdPropertyAccessor;
 import org.springframework.data.gremlin.schema.writer.SchemaWriter;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;

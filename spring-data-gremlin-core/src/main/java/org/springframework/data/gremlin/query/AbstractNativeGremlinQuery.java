@@ -4,8 +4,6 @@ import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
 import org.springframework.data.gremlin.tx.GremlinGraphFactory;
 
-import java.util.Collection;
-
 /**
  * Native query abstraction for {@link AbstractGremlinQuery}s.
  *

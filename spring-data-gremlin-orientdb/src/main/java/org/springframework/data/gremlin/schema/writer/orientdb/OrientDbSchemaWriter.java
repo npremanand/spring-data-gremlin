@@ -5,7 +5,6 @@ import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.schema.GremlinSchema;
@@ -23,7 +22,7 @@ import static org.springframework.data.gremlin.schema.property.GremlinRelatedPro
  *
  * @author Gman
  */
-public class OrientDbSchemaWriter extends AbstractSchemaWriter {
+public class OrientDbSchemaWriter extends AbstractSchemaWriter<OClass, OClass, OProperty, OClass> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDbSchemaWriter.class);
 
@@ -45,8 +44,8 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
         }
         try {
 
-            v = dbf.graphNoTx().getRawDatabase().getClass("Vertex");
-            e = dbf.graphNoTx().getRawDatabase().getClass("Edge");
+            v = dbf.graphNoTx().getRawDatabase().getClass(OClass.VERTEX_CLASS_NAME);
+            e = dbf.graphNoTx().getRawDatabase().getClass(OClass.EDGE_CLASS_NAME);
 
         } catch (Exception e) {
 
@@ -77,15 +76,25 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected Object createVertexClass(GremlinSchema schema) throws Exception {
-        OClass vClass = getOrCreateClass(oSchema, v, schema.getClassName());
-        return vClass;
+    protected OClass createVertexClass(GremlinSchema schema) throws Exception {
+        OClass base = v;
+        if (schema.getSuperSchema() != null) {
+            base = createVertexClass(schema.getSuperSchema());
+        }
+        OClass oClass = getOrCreateClass(oSchema, base, schema.getClassName());
+        oClass.setAbstract(schema.isAbstract());
+        return oClass;
     }
 
     @Override
-    protected Object createEdgeClass(GremlinSchema schema) throws Exception {
-        OClass edgeClass = getOrCreateClass(oSchema, e, schema.getClassName());
-        return edgeClass;
+    protected OClass createEdgeClass(GremlinSchema schema) throws Exception {
+        OClass base = e;
+        if (schema.getSuperSchema() != null) {
+            base = createEdgeClass(schema.getSuperSchema());
+        }
+        OClass oClass = getOrCreateClass(oSchema, base, schema.getClassName());
+        oClass.setAbstract(schema.isAbstract());
+        return oClass;
     }
 
     @Override
@@ -101,12 +110,12 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected Object createEdgeClass(String name, Object outVertex, Object inVertex, CARDINALITY cardinality) throws SchemaWriterException {
+    protected OClass createEdgeClass(String name, OClass outVertex, OClass inVertex, CARDINALITY cardinality) throws SchemaWriterException {
         OClass edgeClass = getOrCreateClass(oSchema, e, name);
 
         if (!edgeClass.existsProperty("out")) {
             OProperty out = edgeClass.createProperty("out", OType.LINK);
-            out.setLinkedClass((OClass) outVertex);
+            out.setLinkedClass(outVertex);
 
             out.setMax("1");
             if (cardinality == CARDINALITY.ONE_TO_MANY) {
@@ -116,7 +125,7 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
 
         if (!edgeClass.existsProperty("in")) {
             OProperty in = edgeClass.createProperty("in", OType.LINK);
-            in.setLinkedClass((OClass) inVertex);
+            in.setLinkedClass(inVertex);
 
             in.setMax("1");
             if (cardinality == CARDINALITY.MANY_TO_ONE) {
@@ -128,43 +137,45 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
     }
 
     @Override
-    protected boolean isEdgeInProperty(Object edgeClass) {
-        return ((OClass) edgeClass).getProperty("in") != null;
+    protected boolean isEdgeInProperty(OClass edgeClass) {
+        return edgeClass.getProperty("in") != null;
     }
 
     @Override
-    protected boolean isEdgeOutProperty(Object edgeClass) {
-        return ((OClass) edgeClass).getProperty("out") != null;
+    protected boolean isEdgeOutProperty(OClass edgeClass) {
+        return edgeClass.getProperty("out") != null;
     }
 
     @Override
-    protected Object setEdgeOut(Object edgeClass, Object vertexClass) {
-        OProperty out = ((OClass) edgeClass).createProperty("out", OType.LINK);
-        out.setLinkedClass((OClass) vertexClass);
+    protected OProperty setEdgeOut(OClass edgeClass, OClass vertexClass) {
+        OProperty out = edgeClass.createProperty("out", OType.LINK);
+        out.setLinkedClass(vertexClass);
         return out;
     }
 
     @Override
-    protected Object setEdgeIn(Object edgeClass, Object vertexClass) {
-        OProperty in = ((OClass) edgeClass).createProperty("in", OType.LINK);
-        in.setLinkedClass((OClass) vertexClass);
+    protected OProperty setEdgeIn(OClass edgeClass, OClass vertexClass) {
+        OProperty in = edgeClass.createProperty("in", OType.LINK);
+        in.setLinkedClass(vertexClass);
         return in;
     }
 
     @Override
-    protected Object createProperty(Object parentElement, String name, Class<?> cls) {
+    protected OProperty createProperty(OClass parentElement, String name, Class<?> cls) {
         OType oType = OType.getTypeByClass(cls);
-        return ((OClass) parentElement).createProperty(name, oType);
+        return parentElement.createProperty(name, oType);
     }
 
     @Override
-    protected void createNonUniqueIndex(Object prop) {
-        ((OProperty) prop).createIndex(OClass.INDEX_TYPE.NOTUNIQUE);
+    protected void createNonUniqueIndex(OProperty prop) {
+        LOGGER.debug("createNonUniqueIndex:{}", prop);
+        prop.createIndex(OClass.INDEX_TYPE.NOTUNIQUE);
     }
 
     @Override
-    protected void createUniqueIndex(Object prop) {
-        ((OProperty) prop).createIndex(OClass.INDEX_TYPE.UNIQUE);
+    protected void createUniqueIndex(OProperty prop) {
+        LOGGER.debug("createUniqueIndex:{}", prop);
+        prop.createIndex(OClass.INDEX_TYPE.UNIQUE);
     }
 
     @Override
@@ -176,7 +187,8 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
-
+        } else {
+            LOGGER.warn("createSpatialIndex:exists:{}", indexName);
         }
     }
 
@@ -184,7 +196,7 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter {
         OClass newClass = oSchema.getOrCreateClass(classname, superclass);
         if (!newClass.getSuperClass().getName().equals(superclass.getName())) {
             String msg = String.format("Could not create %s '%s' of type %s. A conflicting %s exists of type %s", getClassType(superclass), classname, superclass.getName(), getClassType(superclass),
-                                       newClass.getSuperClass().getName());
+                newClass.getSuperClass().getName());
             throw new SchemaWriterException(msg);
         }
         return newClass;

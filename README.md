@@ -378,7 +378,7 @@ public class Configuration {
 - ~~Edge repositories~~
 - ~~Serializable class mapping~~
 - ~~Arbitrary class mapping~~
-- Lazy fetching
+- ~~Lazy fetching~~
 - Index for multiple properties
 - Allow for IDs other than String
 - Repository definitions using ~~[Neo4j](http://docs.spring.io/spring-data/neo4j/docs/current/reference/html/#reference_programming-model_annotations)~~, [Frames](http://frames.tinkerpop.com) or ~~some other custom implementation~~.

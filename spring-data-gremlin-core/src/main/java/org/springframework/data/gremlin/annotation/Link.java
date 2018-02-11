@@ -3,7 +3,10 @@ package org.springframework.data.gremlin.annotation;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Created by gman on 12/08/15.

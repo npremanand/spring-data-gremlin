@@ -25,8 +25,8 @@ public final class GremlinQueryMethod extends QueryMethod {
      * @param method   the method
      * @param metadata the metadata
      */
-    public GremlinQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory projectionFactory) {
-        super(method, metadata, projectionFactory);
+	public GremlinQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory projectionFactory) {
+		super(method, metadata, projectionFactory);
         this.method = method;
     }
 

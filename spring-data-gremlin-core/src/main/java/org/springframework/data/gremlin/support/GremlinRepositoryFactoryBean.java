@@ -21,7 +21,7 @@ public class GremlinRepositoryFactoryBean<T extends GremlinRepository<S>, S> ext
     private GremlinRepositoryContext context;
 
     protected GremlinRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
-        super(repositoryInterface);
+		super(repositoryInterface) ;
     }
 
     /* (non-Javadoc)

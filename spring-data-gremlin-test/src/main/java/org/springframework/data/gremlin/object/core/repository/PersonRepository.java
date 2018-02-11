@@ -40,6 +40,8 @@ public interface PersonRepository extends GremlinRepository<Person> {
 
     List<Person> findByFirstNameLike(String string);
 
+    // List<Person> findByFirstNameIgnoreCase(String lastName);
+
     List<Person> findByFirstNameStartsWith(String firstName);
 
     Long countByFirstName(String firstName);

@@ -8,7 +8,8 @@ import org.springframework.data.gremlin.schema.GremlinSchema;
 import org.springframework.data.gremlin.schema.GremlinSchemaFactory;
 import org.springframework.data.repository.query.DefaultParameters;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Executes the query to return a single entity.
