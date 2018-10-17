@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kiwigrid</groupId>
+		<groupId>org.selskabet.jesper</groupId>
 		<artifactId>spring-data-gremlin</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
@@ -16,6 +16,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons</artifactId>
+			<version>1.13.9.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -62,15 +63,20 @@
     <dependency>
       <groupId>org.apache.tinkerpop</groupId>
       <artifactId>tinkergraph-gremlin</artifactId>
+      <scope>test</scope>
     </dependency>
-		<dependency>
-			<groupId>org.apache.tinkerpop</groupId>
-			<artifactId>gremlin-groovy</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>org.apache.tinkerpop</groupId>
+      <artifactId>gremlin-core</artifactId>
+    </dependency>
+	<dependency>
+		<groupId>org.apache.tinkerpop</groupId>
+		<artifactId>gremlin-groovy</artifactId>
+	</dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.8.10</version>
+      <version>2.8.11.2</version>
     </dependency>
 	</dependencies>
 

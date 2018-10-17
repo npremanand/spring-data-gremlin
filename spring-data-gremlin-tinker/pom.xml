@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kiwigrid</groupId>
+		<groupId>org.selskabet.jesper</groupId>
 		<artifactId>spring-data-gremlin</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
@@ -14,24 +14,28 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.kiwigrid</groupId>
+			<groupId>org.selskabet.jesper</groupId>
 			<artifactId>spring-data-gremlin-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.kiwigrid</groupId>
+			<groupId>org.selskabet.jesper</groupId>
 			<artifactId>spring-data-gremlin-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.kiwigrid</groupId>
+			<groupId>org.selskabet.jesper</groupId>
 			<artifactId>spring-data-gremlin-schemagen-neo4j</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.kiwigrid</groupId>
+			<groupId>org.selskabet.jesper</groupId>
 			<artifactId>spring-data-gremlin-schemagen-jpa</artifactId>
 			<scope>test</scope>
 		</dependency>
+	    <dependency>
+	      <groupId>org.apache.tinkerpop</groupId>
+	      <artifactId>tinkergraph-gremlin</artifactId>
+	    </dependency>
 	</dependencies>
 
 </project>
