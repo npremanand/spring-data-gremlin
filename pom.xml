@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -21,7 +21,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<manifest.file/>
+		<manifest.file />
 		<bundlor.enabled>false</bundlor.enabled>
 		<project.type>multi</project.type>
 		<dist.id>spring-data-gremlin</dist.id>
@@ -65,7 +65,7 @@
 				<artifactId>gremlin-groovy</artifactId>
 				<version>${tinkerpop.version}</version>
 			</dependency>
-      <dependency>
+			<dependency>
 				<groupId>org.apache.tinkerpop</groupId>
 				<artifactId>tinkergraph-gremlin</artifactId>
 				<version>${tinkerpop.version}</version>
@@ -113,22 +113,22 @@
 		</dependencies>
 	</dependencyManagement>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <useFile>true</useFile>
-          <includes>
-            <include>**/Test*.java</include>
-            <include>**/*Test.java</include>
-            <include>**/*TestCase.java</include>
-          </includes>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<useFile>true</useFile>
+					<includes>
+						<include>**/Test*.java</include>
+						<include>**/*Test.java</include>
+						<include>**/*TestCase.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 	<developers>
 		<developer>
@@ -141,21 +141,21 @@
 			<name>Andreas Berger</name>
 			<email>andreas@berger-ecommerce.com</email>
 		</developer>
-    <developer>
-      <id>zifnab87</id>
-      <name>Michail Michailidis</name>
-      <email>mmichaelid@gmail.com</email>
-    </developer>
-    <developer>
-      <id>Patrick Madden</id>
-      <name>Patrick Madden</name>
-      <email>pmadden@tomsawyer.com</email>
-    </developer>
-    <developer>
-      <id>Jesper S. Møller</id>
-      <name>Jesper S. Møller</name>
-      <email>jesper@selskabet.org</email>
-    </developer>
+		<developer>
+			<id>zifnab87</id>
+			<name>Michail Michailidis</name>
+			<email>mmichaelid@gmail.com</email>
+		</developer>
+		<developer>
+			<id>Patrick Madden</id>
+			<name>Patrick Madden</name>
+			<email>pmadden@tomsawyer.com</email>
+		</developer>
+		<developer>
+			<id>Jesper S. Møller</id>
+			<name>Jesper S. Møller</name>
+			<email>jesper@selskabet.org</email>
+		</developer>
 	</developers>
 
 	<licenses>
