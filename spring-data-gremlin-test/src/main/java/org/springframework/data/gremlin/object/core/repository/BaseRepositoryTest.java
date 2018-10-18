@@ -118,7 +118,8 @@ public abstract class BaseRepositoryTest {
 
         lara = new Person("Lara", "Ivanovic", address, true);
         graham.setLocations(locations);
-        graham.setCurrentLocation(locations.iterator().next());
+        Located first = locations.iterator().next();
+        graham.setCurrentLocation(new Located(first.getDate(), graham, first.getLocation()));
         repository.save(graham);
         vanja = new Person("Vanja", "Ivanovic", address, true);
         repository.save(vanja);

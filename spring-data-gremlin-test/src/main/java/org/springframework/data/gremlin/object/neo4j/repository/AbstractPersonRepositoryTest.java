@@ -311,6 +311,7 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         Person graham = repository.findByFirstName("Graham").get(0);
         assertNotNull(graham);
         assertNotNull(graham.getLocations());
+        assertNotNull(graham.getCurrentLocation());
         assertEquals(5, graham.getLocations().size());
         List<Located> locations = new ArrayList<Located>(graham.getLocations());
         Collections.sort(locations, new Comparator<Located>() {

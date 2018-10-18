@@ -11,7 +11,6 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.springframework.util.Assert.isNull;
-import static org.springframework.util.Assert.notNull;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
@@ -336,9 +335,9 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         location = locationRepository.save(location);
 
         location = locationRepository.findOne(location.getId());
-        notNull(location);
+        assertNotNull(location);
         // Area should not be null as the vertex will be created, but the contents should be empty since properties should not be cascaded.
-        notNull(location.getArea());
+        assertNotNull(location.getArea());
         isNull(location.getArea().getName());
     }
 
@@ -350,8 +349,8 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         location = locationRepository.save(location);
 
         location = locationRepository.findOne(location.getId());
-        notNull(location);
-        notNull(location.getArea());
+        assertNotNull(location);
+        assertNotNull(location.getArea());
         assertEquals("TestArea", location.getArea().getName());
         System.setProperty("sdg-cascade-all", "false");
     }
@@ -650,6 +649,10 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
 
         assertNotNull(result.getRandoms());
         assertEquals(4, result.getRandoms().size());
+        assertEquals(Date.class, result.getRandoms().get("date").getClass());
+        assertEquals(true, result.getRandoms().get("boo"));
+        assertEquals(1, result.getRandoms().get("status"));
+        
         assertNotNull(result.getOtherStuff());
         assertEquals(2, result.getOtherStuff().size());
 

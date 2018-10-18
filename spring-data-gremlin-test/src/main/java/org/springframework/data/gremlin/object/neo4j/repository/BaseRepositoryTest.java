@@ -27,6 +27,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -104,7 +105,8 @@ public abstract class BaseRepositoryTest {
 
         lara = new Person("Lara", "Ivanovic", address, true);
         graham.setLocations(locations);
-        graham.setCurrentLocation(locations.iterator().next());
+        graham.setCurrentLocation(
+        		new Located(new Date(), graham, locations.iterator().next().getLocation()));
 
 
         graham.setOwns(new House(3));
@@ -190,5 +192,15 @@ public abstract class BaseRepositoryTest {
         assertNotNull(addressRepository);
         assertNotNull(locationRepository);
     }
+
+    public static int countObjects(Iterable<?> findAll) {
+    	int sum = 0;
+    	Iterator<?> iterator = findAll.iterator();
+		while (iterator.hasNext()) {
+    		sum++;
+    		iterator.next();
+    	}
+		return sum;
+	}
 
 }

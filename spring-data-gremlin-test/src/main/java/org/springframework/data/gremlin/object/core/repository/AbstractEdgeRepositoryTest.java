@@ -54,7 +54,7 @@ public abstract class AbstractEdgeRepositoryTest extends BaseRepositoryTest {
         List<Located> located = new ArrayList<Located>();
 
         CollectionUtils.addAll(located, locatedRepository.findAll());
-        assertEquals(5, located.size());
+        assertEquals(6, located.size());
         located.clear();
 
         locatedRepository.deleteAll();

@@ -69,7 +69,7 @@ public class GremlinDynamicSchema<V> extends GremlinVertexSchema<V> {
 
         Map<String, Object> obj = (Map<String, Object>) super.cascadeLoadFromGraph(graphAdapter, element, noCascadingMap);
         for (String key : element.keys()) {
-            obj.put(key, element.property(key));
+            obj.put(key, element.property(key).orElse(null));
         }
         return (V) obj;
     }
