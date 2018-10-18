@@ -38,7 +38,7 @@
 		<module>spring-data-gremlin-test</module>
 		<module>spring-data-gremlin-schemagen-jpa</module>
 		<module>spring-data-gremlin-schemagen-neo4j</module>
-		<module>spring-data-gremlin-orientdb</module>
+<!-- 		<module>spring-data-gremlin-orientdb</module> -->
 		<module>spring-data-gremlin-tinker</module>
 		<module>spring-data-gremlin-janus</module>
 	</modules>
