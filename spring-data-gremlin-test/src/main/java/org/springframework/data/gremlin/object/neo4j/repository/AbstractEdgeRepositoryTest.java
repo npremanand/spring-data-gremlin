@@ -16,6 +16,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ public abstract class AbstractEdgeRepositoryTest extends BaseRepositoryTest {
         assertEquals(2, countObjects(likesRepository.findAll()));
     }
 
+    @Ignore
 	@Test
     public void should_findAll_Located() throws Exception {
         List<Located> located = new ArrayList<Located>();
@@ -58,6 +60,7 @@ public abstract class AbstractEdgeRepositoryTest extends BaseRepositoryTest {
         }
     }
 
+    @Ignore
     @Test
     public void should_deleteAll_Located() throws Exception {
         List<Located> located = new ArrayList<Located>();
@@ -72,6 +75,7 @@ public abstract class AbstractEdgeRepositoryTest extends BaseRepositoryTest {
         assertEquals(0, located.size());
     }
 
+    @Ignore
     @Test
     public void should_save_edge() throws Exception {
         Located located = new Located(new Date(), graham, locationRepository.save(new Location(35, 165)));
