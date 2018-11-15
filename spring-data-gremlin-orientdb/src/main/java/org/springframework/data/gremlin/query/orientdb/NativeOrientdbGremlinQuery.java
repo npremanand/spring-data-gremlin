@@ -48,7 +48,7 @@ public class NativeOrientdbGremlinQuery extends AbstractNativeGremlinQuery {
                 if (val == null || val instanceof Pageable) {
                     continue;
                 }
-                String paramName = param.getName();
+                String paramName = param.getName().get();
                 String placeholder = param.getPlaceholder();
                 if (paramName == null) {
                     paramName = "placeholder_" + param.getIndex();

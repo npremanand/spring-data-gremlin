@@ -22,6 +22,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -162,7 +163,7 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
 
     @Transactional(readOnly = false)
     @Override
-    public <S extends T> Iterable<S> save(Iterable<S> iterable) {
+    public <S extends T> Iterable<S> saveAll(Iterable<S> iterable) {
         for (S s : iterable) {
             save(s);
         }
@@ -170,7 +171,7 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
     }
 
     @Override
-    public T findOne(String id) {
+    public Optional<T> findById(String id) {
         T object = null;
         Element element;
         if (schema.isVertexSchema()) {
@@ -183,27 +184,27 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
 
         if (element != null) {
             GremlinSchema<? extends T> schema = this.schema.findMostSpecificSchema(element);
-            object = schema.loadFromGraph(graphAdapter, element);
+            return Optional.of(schema.loadFromGraph(graphAdapter, element));
+        } else {
+        	return Optional.empty();
         }
-
-        return object;
     }
 
     @Override
-    public boolean exists(String id) {
+    public boolean existsById(String id) {
         return count() == 1;
     }
-
+    
     @Override
     public Iterable<T> findAll() {
         throw new NotImplementedException("Finding all vertices in Graph databases does not really make sense. So, it hasn't been implemented.");
     }
 
     @Override
-    public Iterable<T> findAll(Iterable<String> iterable) {
+    public Iterable<T> findAllById(Iterable<String> iterable) {
         Set<T> objects = new HashSet<T>();
         for (String id : iterable) {
-            objects.add(findOne(id));
+            findById(id).ifPresent(objects::add);
         }
         return objects;
     }
@@ -215,7 +216,7 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
 
     @Transactional(readOnly = false)
     @Override
-    public void delete(String id) {
+    public void deleteById(String id) {
         if (schema.isVertexSchema()) {
             Vertex v = graphAdapter.findVertexById(id);
             v.remove();;
@@ -228,17 +229,17 @@ public class SimpleGremlinRepository<T> implements GremlinRepository<T> {
     @Transactional(readOnly = false)
     @Override
     public void delete(T t) {
-        delete(schema.getObjectId(t));
+        deleteById(schema.getObjectId(t));
     }
 
     @Transactional(readOnly = false)
     @Override
-    public void delete(Iterable<? extends T> iterable) {
+    public void deleteAll(Iterable<? extends T> iterable) {
         for (T t : iterable) {
             delete(t);
         }
     }
-
+    
     @Override
     public void deleteAll() {
         throw new NotImplementedException("Deleting all vertices in Gremlin has not been implemented.");

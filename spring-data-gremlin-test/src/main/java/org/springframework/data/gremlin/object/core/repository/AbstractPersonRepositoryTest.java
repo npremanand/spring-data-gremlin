@@ -21,7 +21,9 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         Person person = new Person("Sasa", "Brown");
         String id = repository.save(person).getId();
 
-        Person result = repository.findOne(id);
+        Optional<Person> personResult = repository.findById(id);
+        assertTrue(personResult.isPresent());
+        Person result = personResult.get();
 
         assertEquals(result.getFirstName(), person.getFirstName());
         assertEquals(result.getLastName(), person.getLastName());
@@ -336,7 +338,9 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         location.setArea(new Area("TestArea"));
         location = locationRepository.save(location);
 
-        location = locationRepository.findOne(location.getId());
+        Optional<Location> loc2 = locationRepository.findById(location.getId());
+        assertTrue(loc2.isPresent());
+        location = loc2.get();
         assertNotNull(location);
         // Area should not be null as the vertex will be created, but the contents should be empty since properties should not be cascaded.
         assertNotNull(location.getArea());
@@ -351,8 +355,10 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         location.setArea(new Area("TestArea"));
         location = locationRepository.save(location);
 
-        location = locationRepository.findOne(location.getId());
-        assertNotNull(location);
+        Optional<Location> locationResult = locationRepository.findById(location.getId());
+        assertTrue(locationResult.isPresent());
+        location = locationResult.get();
+
         assertNotNull(location.getArea());
         assertEquals("TestArea", location.getArea().getName());
         System.setProperty("sdg-cascade-all", "false");
@@ -625,7 +631,9 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
 
         String id = repository.save(person).getId();
 
-        Person result = repository.findOne(id);
+        Optional<Person> personResult = repository.findById(id);
+        assertTrue(personResult.isPresent());
+        Person result = personResult.get();
 
         assertEquals(result.getFirstName(), person.getFirstName());
         assertEquals(result.getLastName(), person.getLastName());
@@ -651,7 +659,9 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
 
         String id = repository.save(person).getId();
 
-        Person result = repository.findOne(id);
+        Optional<Person> personResult = repository.findById(id);
+        assertTrue(personResult.isPresent());
+        Person result = personResult.get();
 
         assertNotNull(result.getRandoms());
         assertEquals(4, result.getRandoms().size());
@@ -666,7 +676,9 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
 
         repository.save(result);
 
-        result = repository.findOne(id);
+        personResult = repository.findById(id);
+        assertTrue(personResult.isPresent());
+        result = personResult.get();
 
         assertNotNull(result.getRandoms());
         assertEquals(3, result.getRandoms().size());
@@ -683,7 +695,7 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
 		person.setOwns(house);
 		String id = repository.save(person).getId();
 
-		Person result = repository.findOne(id);
+		Person result = repository.findById(id).get();
 
         assertTrue("Not instance of ExtendedPerson", result instanceof ExtendedPerson);
 		assertEquals(person.getFirstName(), result.getFirstName());

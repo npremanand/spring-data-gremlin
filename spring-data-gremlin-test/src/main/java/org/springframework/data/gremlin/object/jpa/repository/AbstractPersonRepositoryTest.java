@@ -26,7 +26,9 @@ public abstract class AbstractPersonRepositoryTest extends BaseRepositoryTest {
         Person person = new Person("Sasa", "Brown");
         String id = repository.save(person).getId();
 
-        Person result = repository.findOne(id);
+        Optional<Person> personResult = repository.findById(id);
+        assertTrue(personResult.isPresent());
+        Person result = personResult.get();
 
         assertEquals(result.getFirstName(), person.getFirstName());
         assertEquals(result.getLastName(), person.getLastName());

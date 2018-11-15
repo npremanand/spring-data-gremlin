@@ -56,7 +56,7 @@ public class CollectionExecution extends AbstractGremlinExecution {
 
         ParametersParameterAccessor accessor = new ParametersParameterAccessor(parameters, values);
         Pageable pageable = accessor.getPageable();
-        if (pageable != null) {
+        if (pageable != null &&  pageable.isPaged()) {
             long total = (Long) new CountExecution(schemaFactory, parameters, graphAdapter).doExecute(query, values);
             return new PageImpl<Object>(objects, pageable, total);
         }

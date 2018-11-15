@@ -14,6 +14,8 @@ import org.springframework.data.repository.query.DefaultParameters;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 
+import java.util.Optional;
+
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -58,22 +60,22 @@ public class StringBasedGremlinQuery extends AbstractGremlinQuery {
         String queryString = this.queryString;
 
         for (Parameter param : parameters.getBindableParameters()) {
-            String paramName = param.getName();
+            Optional<String> paramName = param.getName();
             String placeholder = param.getPlaceholder();
             Object val = values[param.getIndex()];
-            if (paramName == null) {
+            if (! paramName.isPresent()) {
                 placeholder = "placeholder_" + param.getIndex();
                 queryString = queryString.replaceFirst("\\?", placeholder);
                 bindings.put(placeholder, val);
             } else {
-                queryString = queryString.replaceFirst(placeholder, paramName);
-                bindings.put(paramName, val);
+                queryString = queryString.replaceFirst(placeholder, paramName.get());
+                bindings.put(paramName.get(), val);
             }
         }
 
         ParametersParameterAccessor accessor = new ParametersParameterAccessor(parameters, values);
         Pageable pageable = accessor.getPageable();
-        if (pageable != null && !ignorePaging) {
+        if (pageable != null && pageable.isPaged() && !ignorePaging) {
             queryString = String.format("%s.range(%d, %d)", queryString, pageable.getOffset(), pageable.getOffset() + pageable.getPageSize() );
         }
 

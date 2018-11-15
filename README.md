@@ -5,7 +5,7 @@ Spring data tinkerpop makes it easier to implement Graph based repositories. Thi
 ## Features
 
 - All the great features of [Spring Data](http://projects.spring.io/spring-data)
-- Support for [OrientDB](http://orientdb.com) and [JanusGraph](http://janusgraph.org)  out of the box
+- Support for [OrientDB](http://orientdb.com) and [JanusGraph](http://janusgraph.org) out of the box
 - Schema creation in supported databases
 - Support to build repositories based on Spring using our [custom set of annotations](https://github.com/gjrwebber/org/springframework/data/gremlin/annotation), [spring-data-neo4j](http://docs.spring.io/spring-data/neo4j/docs/current/reference/html/#reference_programming-model_annotations) or JPA annotations.
 - Vertex and Edge repository support
@@ -98,7 +98,7 @@ Once you have your build configuration setup you need to add the correct depende
 
 #### Database dependency
 **OrientDB** - com.github.gjrwebber:spring-data-gremlin-orientdb:0.1.0-SNAPSHOT  
-**JanusGraph** - com.github.gjrwebber:spring-data-gremlin-janus:0.1.0-SNAPSHOT
+**JanusGraph** - com.github.jespersm:spring-data-gremlin-janus:0.1.0-SNAPSHOT
 
 #### Schema generator dependency
 **Default** - No further dependency  

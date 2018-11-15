@@ -1,6 +1,9 @@
 package org.springframework.data.gremlin.schema.generator;
 
-import org.neo4j.graphdb.Direction;
+import org.neo4j.ogm.annotation.EndNode;
+import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.RelationshipEntity;
+import org.neo4j.ogm.annotation.StartNode;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.gremlin.annotation.Index;
 import org.springframework.data.gremlin.schema.GremlinSchema;
