@@ -1,8 +1,8 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
 import org.springframework.data.gremlin.annotation.Index;
-import org.springframework.data.neo4j.annotation.GraphId;
-import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.NodeEntity;
 
 import static org.springframework.data.gremlin.annotation.Index.IndexType.SPATIAL_LATITUDE;
 import static org.springframework.data.gremlin.annotation.Index.IndexType.SPATIAL_LONGITUDE;

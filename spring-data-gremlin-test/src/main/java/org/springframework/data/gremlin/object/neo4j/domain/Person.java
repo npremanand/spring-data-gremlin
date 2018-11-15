@@ -1,16 +1,13 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
-import org.neo4j.graphdb.Direction;
+import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Relationship;
 import org.springframework.data.gremlin.annotation.LinkVia;
-import org.springframework.data.neo4j.annotation.GraphId;
-import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@NodeEntity
+@org.neo4j.ogm.annotation.NodeEntity
 public class Person {
 
     public enum AWESOME {
@@ -34,13 +31,13 @@ public class Person {
 
     private String lastName;
 
-    @RelatedTo(type = "lives_at", direction = Direction.OUTGOING)
+    @Relationship(type = "lives_at", direction = Relationship.OUTGOING)
     private Address address;
 
-    @RelatedToVia
+    @Relationship
     private Set<Located> locations;
 
-    @RelatedToVia
+    @Relationship
     private Located currentLocation;
 
     private Boolean active;
@@ -49,7 +46,7 @@ public class Person {
 
     private HashSet<VEHICLE> vehicles;
 
-    @RelatedToVia
+    @Relationship
     private Set<Likes> likes;
 
     private House owns;

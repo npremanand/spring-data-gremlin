@@ -1,6 +1,6 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
-import org.springframework.data.neo4j.annotation.*;
+import org.neo4j.ogm.annotation.*;
 
 import java.util.Date;
 
@@ -13,7 +13,7 @@ public class Located {
     @GraphId
     private String id;
 
-    @GraphProperty(propertyName = "location_date")
+    @Property(name = "location_date")
     private Date date;
 
     @StartNode
