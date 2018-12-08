@@ -39,6 +39,7 @@ public class GremlinCollectionPropertyMapper implements GremlinPropertyMapper<Gr
         // Now go through the collection of linked Objects
         for (Object linkedObj : (Collection) val) {
 
+        	boolean newVertex = false;
             // Find the linked vertex mapped to this linked Object
             Vertex linkedVertex = (Vertex) cascadingSchemas.get(linkedObj);
             if (linkedVertex == null) {
@@ -51,6 +52,7 @@ public class GremlinCollectionPropertyMapper implements GremlinPropertyMapper<Gr
 
                     // No linked vertex yet, create it
                     linkedVertex = graphAdapter.createVertex(property.getRelatedSchema());
+                    newVertex = true;
                 }
             }
 
@@ -70,7 +72,7 @@ public class GremlinCollectionPropertyMapper implements GremlinPropertyMapper<Gr
             // Add the linkedVertex to the actual linked vertices.
             actualLinkedVertices.add(linkedVertex);
 
-            if (Boolean.getBoolean(CASCADE_ALL_KEY) || property.getDirection() == Direction.OUT) {
+            if (newVertex || Boolean.getBoolean(CASCADE_ALL_KEY) || property.getDirection() == Direction.OUT) {
                 LOGGER.debug("Cascading copy of " + property.getRelatedSchema().getClassName());
                 // Updates or saves the linkedObj into the linkedVertex
                 property.getRelatedSchema().cascadeCopyToGraph(graphAdapter, linkedVertex, linkedObj, cascadingSchemas);
@@ -95,13 +97,14 @@ public class GremlinCollectionPropertyMapper implements GremlinPropertyMapper<Gr
 
     private <V> Set<V> loadCollection(final GremlinSchema<V> schema, final GremlinRelatedProperty property, final GremlinGraphAdapter graphAdapter, final Vertex vertex, final Map<Object, Object> cascadingSchemas) {
         final Set<V> collection = new HashSet<V>();
-        vertex.edges(Direction.IN, property.getName()).forEachRemaining(new Consumer<Edge>() {
+        Direction direction = property.getDirection();
+		vertex.edges(direction, property.getName()).forEachRemaining(new Consumer<Edge>() {
             @Override
-            public void accept(Edge outEdge) {
-                graphAdapter.refresh(outEdge);
-                Vertex inVertex = outEdge.outVertex();
-                graphAdapter.refresh(inVertex);
-                V linkedObject = schema.cascadeLoadFromGraph(graphAdapter, inVertex, cascadingSchemas);
+            public void accept(Edge connectedEdge) {
+                graphAdapter.refresh(connectedEdge);
+                Vertex linkedVertex = (direction == Direction.OUT) ? connectedEdge.inVertex() : connectedEdge.outVertex();
+                graphAdapter.refresh(linkedVertex);
+                V linkedObject = schema.cascadeLoadFromGraph(graphAdapter, linkedVertex, cascadingSchemas);
                 collection.add(linkedObject);
             }
         });

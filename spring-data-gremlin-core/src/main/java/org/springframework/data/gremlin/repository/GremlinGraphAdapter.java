@@ -120,7 +120,7 @@ public class GremlinGraphAdapter<G extends Graph> {
     @Transactional(readOnly = false)
     public Edge addEdge(Object o, Vertex outVertex, Vertex inVertex, String name) {
         if (LOGGER.isTraceEnabled()) { 
-        	LOGGER.trace("CREATING EDGE " + outVertex + " -> " + inVertex + "...");
+        	LOGGER.trace("CREATING EDGE " + outVertex + " -" + name + "-> " + inVertex + "...");
         }
         Edge edge = outVertex.addEdge(name, inVertex);
         return edge;

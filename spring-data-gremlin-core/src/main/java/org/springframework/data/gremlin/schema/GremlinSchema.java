@@ -220,6 +220,7 @@ public abstract class GremlinSchema<V> {
                 LOGGER.warn(String.format("Could not save property %s of %s", property, obj.toString()), e);
             }
         });
+        setObjectId(obj, element);
 
         if (getGraphId(obj) == null && TransactionSynchronizationManager.isSynchronizationActive()) {
             final Element finalElement = element;

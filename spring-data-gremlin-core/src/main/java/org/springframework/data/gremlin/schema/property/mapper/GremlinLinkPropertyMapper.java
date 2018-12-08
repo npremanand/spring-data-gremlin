@@ -34,6 +34,7 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
 
         // get the current edge for this property
         Iterator<Edge> edges = vertex.edges(property.getDirection(), property.getName());
+        boolean createdNew = false;
         if (edges.hasNext()) {
             Edge edge = edges.next();
             linkedVertex = edge.vertices(property.getDirection().opposite()).next();
@@ -51,6 +52,7 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
                 LOGGER.debug("No Linked Vertex for property: " + property.getName() + ". Creating " + property.getRelatedSchema().getClassName());
                 // No linked vertex yet, create it
                 linkedVertex = graphAdapter.createVertex(property.getRelatedSchema());
+                createdNew = true;
             }
 
             Assert.notNull(linkedVertex, "Creation of vertex failed from " + property.getRelatedSchema().getClassName());
@@ -61,12 +63,10 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
             }
         }
 
-        if (Boolean.getBoolean(CASCADE_ALL_KEY) || property.getDirection() == Direction.OUT) {
+        if (createdNew || Boolean.getBoolean(CASCADE_ALL_KEY) || property.getDirection() == Direction.OUT) {
             LOGGER.debug("Cascading copy of " + property.getRelatedSchema().getClassName());
             // Updates or saves the val into the linkedVertex
-            if (property.getDirection() == Direction.OUT) {
-                property.getRelatedSchema().cascadeCopyToGraph(graphAdapter, linkedVertex, val, cascadingSchemas);
-            }
+            property.getRelatedSchema().cascadeCopyToGraph(graphAdapter, linkedVertex, val, cascadingSchemas);
         }
     }
 
@@ -78,9 +78,9 @@ public class GremlinLinkPropertyMapper implements GremlinPropertyMapper<GremlinR
             @Override
             public void accept(Edge outEdge) {
                 graphAdapter.refresh(outEdge);
-                Vertex inVertex = outEdge.inVertex();
-                graphAdapter.refresh(inVertex);
-                val[0] = property.getRelatedSchema().cascadeLoadFromGraph(graphAdapter, inVertex, cascadingSchemas);
+                Vertex linkedVertex = property.getDirection() == Direction.OUT ? outEdge.inVertex() : outEdge.outVertex();
+                graphAdapter.refresh(linkedVertex);
+                val[0] = property.getRelatedSchema().cascadeLoadFromGraph(graphAdapter, linkedVertex, cascadingSchemas);
             }
         });
         return val[0];
