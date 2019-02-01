@@ -10,7 +10,6 @@ import org.springframework.data.gremlin.object.core.repository.AbstractPersonRep
 import org.springframework.data.gremlin.object.core.repository.NativePersonRepository;
 import org.springframework.data.gremlin.object.core.repository.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
-import scala.Int;
 
 import java.util.Iterator;
 

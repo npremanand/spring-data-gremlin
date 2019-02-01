@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.property.GremlinAdjacentProperty;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -20,7 +21,8 @@ public class GremlinAdjacentPropertyMapper implements GremlinPropertyMapper<Grem
     @Override
     public void copyToVertex(final GremlinAdjacentProperty property, final GremlinGraphAdapter graphAdapter, final Edge edge, final Object val, final  Map<Object, Object> cascadingSchemas) {
 
-        Vertex linkedVertex = edge.vertices(property.getDirection()).next();
+    	Iterator<Vertex> vertices = edge.vertices(property.getDirection());
+        Vertex linkedVertex = vertices.hasNext() ? vertices.next() : null;
 
         if (linkedVertex == null) {
             linkedVertex = (Vertex) cascadingSchemas.get(val);

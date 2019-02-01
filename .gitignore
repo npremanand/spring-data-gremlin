@@ -2,3 +2,9 @@ build
 .idea/
 .gradle/
 *.iml
+
+# For Eclipse
+.settings/
+.classpath
+.factorypath
+.project

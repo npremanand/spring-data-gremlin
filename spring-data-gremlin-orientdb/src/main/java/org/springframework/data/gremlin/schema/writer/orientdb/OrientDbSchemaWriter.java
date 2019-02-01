@@ -1,5 +1,6 @@
 package org.springframework.data.gremlin.schema.writer.orientdb;
 
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
@@ -17,6 +18,10 @@ import org.springframework.data.gremlin.tx.orientdb.OrientDBGremlinGraphFactory;
 
 import static org.springframework.data.gremlin.schema.property.GremlinRelatedProperty.CARDINALITY;
 
+import java.io.Closeable;
+
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+
 /**
  * A concrete {@link SchemaWriter} for an OrientDB database.
  *
@@ -27,25 +32,28 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter<OClass, OClass, O
     private static final Logger LOGGER = LoggerFactory.getLogger(OrientDbSchemaWriter.class);
 
     private OrientDBGremlinGraphFactory dbf;
+    private OrientGraph graph;
     private OSchema oSchema;
     private OClass v;
     private OClass e;
 
-    public void initialise(GremlinGraphFactory tgf, GremlinSchema<?> schema) throws SchemaWriterException {
-
+    public boolean initialise(GremlinGraphFactory tgf, GremlinSchema<?> schema) throws SchemaWriterException {
+    	if (this.oSchema != null) {
+    		return false; // already initialized, leave it be
+    	}
         LOGGER.debug("Initialising...");
         try {
             dbf = (OrientDBGremlinGraphFactory) tgf;
-            oSchema = dbf.graphNoTx().getRawDatabase().getMetadata().getSchema();
-
+            graph = dbf.graphNoTx();
+			oSchema = graph.getRawDatabase().getMetadata().getSchema();
         } catch (RuntimeException e) {
             String msg = String.format("Could not create schema %s. ERROR: %s", schema, e.getMessage());
             throw new SchemaWriterException(msg, e);
         }
         try {
 
-            v = dbf.graphNoTx().getRawDatabase().getClass(OClass.VERTEX_CLASS_NAME);
-            e = dbf.graphNoTx().getRawDatabase().getClass(OClass.EDGE_CLASS_NAME);
+            v = graph.getRawDatabase().getClass(OClass.VERTEX_CLASS_NAME);
+            e = graph.getRawDatabase().getClass(OClass.EDGE_CLASS_NAME);
 
         } catch (Exception e) {
 
@@ -61,12 +69,30 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter<OClass, OClass, O
             throw new SchemaWriterException(msg, e);
         }
         LOGGER.debug("Initialised.");
+        return true;
     }
 
+    void cleanup() {
+    	dbf = null;
+    	if (graph != null) {
+    		graph.close(); // releases it back to the pool
+    		graph = null;
+    	}
+    	oSchema = null;
+    	v = null;
+    	e = null;
+    }
+    
     @Override
     public void writeSchema(GremlinGraphFactory tgf, GremlinSchema<?> schema) throws SchemaWriterException {
-        initialise(tgf, schema);
-        super.writeSchema(tgf, schema);
+        boolean didInitialize = initialise(tgf, schema);
+        try {
+        	super.writeSchema(tgf, schema);
+        } finally {
+	    	if (didInitialize) {
+	    		cleanup();
+	    	}
+    	}
     }
 
     @Override
@@ -181,11 +207,16 @@ public class OrientDbSchemaWriter extends AbstractSchemaWriter<OClass, OClass, O
     @Override
     protected void createSpatialIndex(GremlinSchema<?> schema, GremlinProperty latitude, GremlinProperty longitude) {
         String indexName = schema.getClassName() + ".lat_lon";
-        if (dbf.graphNoTx().getVertexIndexedKeys(indexName) == null) {
+        if (graph.getVertexIndexedKeys(indexName) == null) {
             try {
-                dbf.graphNoTx().executeCommand(new OCommandSQL(String.format("CREATE INDEX %s ON %s(%s,%s) SPATIAL ENGINE LUCENE", indexName, schema.getClassName(), latitude.getName(), longitude.getName())));
+                Object result = graph.executeCommand(new OCommandSQL(String.format("CREATE INDEX %s ON %s(%s,%s) SPATIAL ENGINE LUCENE", indexName, schema.getClassName(), latitude.getName(), longitude.getName())));
+                if (result instanceof Closeable) {
+                	((Closeable)result).close();
+                }
             } catch (Exception e1) {
+                LOGGER.warn("createSpatialIndex: can't create index : " + indexName, e1);
                 e1.printStackTrace();
+                // TODO: Really swallow this exception?
             }
         } else {
             LOGGER.warn("createSpatialIndex:exists:{}", indexName);

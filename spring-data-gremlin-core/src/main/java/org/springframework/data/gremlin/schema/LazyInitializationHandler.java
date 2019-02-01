@@ -2,13 +2,18 @@ package org.springframework.data.gremlin.schema;
 
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyObject;
+
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.gremlin.repository.GremlinGraphAdapter;
 import org.springframework.data.gremlin.schema.property.accessor.GremlinPropertyAccessor;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -34,7 +39,7 @@ public class LazyInitializationHandler implements MethodHandler {
 
     @Override
     public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-        LOGGER.trace("Invoke {}", thisMethod);
+        //LOGGER.trace("Invoke {}", thisMethod);
         if (thisMethod.getDeclaringClass() == Object.class) {
             if (args.length == 0) {
                 if (thisMethod.getName().equals("hashCode")) {
@@ -64,7 +69,16 @@ public class LazyInitializationHandler implements MethodHandler {
 
     @SuppressWarnings("unchecked")
     private void initialize(Object self) {
-        LOGGER.debug("Init proxy of {}:{}", schema.getClassName(), element.id());
+        LOGGER.debug("Init proxy of {}:{} (keys: {})", schema.getClassName(), element.id(), element.keys());
+        if (element instanceof Vertex) {
+        	((Vertex)element).edges(Direction.OUT).forEachRemaining(e -> {
+                LOGGER.debug("  edge this -[{}]-> {}", e.label(), e.inVertex());
+        	});
+        	((Vertex)element).edges(Direction.IN).forEachRemaining(e -> {
+                LOGGER.debug("  edge this <-[{}]- {}", e.label(), e.outVertex());
+        	});
+            LOGGER.debug("Vertex links: {}:{} (keys: {})", schema.getClassName(), element.id(), element.keys());
+        }
         try {
             GremlinPropertyAccessor idAccessor = schema.getIdAccessor();
             idAccessor.set(self, schema.encodeId(element.id().toString()));
@@ -74,6 +88,7 @@ public class LazyInitializationHandler implements MethodHandler {
         schema.getPropertyStream().forEach(property -> {
             LOGGER.trace("Load property {}::{} of {}", schema.getClassType(), property.getName(), element.id());
             Object val = property.loadFromVertex(graphAdapter, element, noCascadingMap);
+            LOGGER.trace("Loaded property {}::{} of {} : {}", schema.getClassType(), property.getName(), element.id(), val instanceof Collection ? "[" + ((Collection)val).size() + "]" : (val == null ? "<null>" : getClass().getSimpleName()));
             GremlinPropertyAccessor accessor = property.getAccessor();
             try {
                 accessor.set(self, val);

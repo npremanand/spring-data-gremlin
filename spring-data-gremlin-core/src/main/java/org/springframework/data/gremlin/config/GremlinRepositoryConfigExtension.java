@@ -13,9 +13,10 @@ public class GremlinRepositoryConfigExtension extends RepositoryConfigurationExt
     /* (non-Javadoc)
      * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getRepositoryFactoryClassName()
      */
-    public String getRepositoryFactoryClassName() {
+	@Override
+	public String getRepositoryFactoryBeanClassName() {
         return GremlinRepositoryFactoryBean.class.getName();
-    }
+	}
 
     /* (non-Javadoc)
      * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModulePrefix()

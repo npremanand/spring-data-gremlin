@@ -70,8 +70,8 @@ public class JanusGremlinRepository<T> extends SimpleGremlinRepository<T> {
     public Page<T> findAll(Pageable pageable) {
         List<T> result = new ArrayList<T>();
         int total = 0;
-        int prevOffset = pageable.getOffset();
-        int offset = pageable.getOffset() + pageable.getPageSize();
+        long prevOffset = pageable.getOffset();
+        long offset = pageable.getOffset() + pageable.getPageSize();
         for (Element element : findAllElementsForSchema()) {
             if (total >= prevOffset && total < offset) {
                 result.add(schema.loadFromGraph(graphAdapter, element));

@@ -1,15 +1,23 @@
 package org.springframework.data.gremlin.schema.generator;
 
-import org.neo4j.graphdb.Direction;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.gremlin.annotation.Index;
 import org.springframework.data.gremlin.schema.GremlinSchema;
-import org.springframework.data.neo4j.annotation.*;
+import org.neo4j.ogm.annotation.EndNode;
+import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
+import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.RelationshipEntity;
+import org.neo4j.ogm.annotation.StartNode;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.gremlin.schema.GremlinSchema;
+import org.neo4j.ogm.annotation.Property;
+import org.neo4j.ogm.annotation.Relationship;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 
 /**
  * Created by gman on 3/08/15.
@@ -43,9 +51,14 @@ public class Neo4jSchemaGenerator extends BasicSchemaGenerator implements Annota
             @Override
             public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 
-                GraphId id = AnnotationUtils.getAnnotation(field, GraphId.class);
+                Id id = AnnotationUtils.getAnnotation(field, Id.class);
                 if (id != null) {
                     idFields[0] = field;
+                } else {
+	                GraphId graphid = AnnotationUtils.getAnnotation(field, GraphId.class);
+	                if (graphid != null) {
+	                    idFields[0] = field;
+	                }
                 }
             }
         });
@@ -64,7 +77,7 @@ public class Neo4jSchemaGenerator extends BasicSchemaGenerator implements Annota
         Index.IndexType index = super.getIndexType(field);
         if (index == null || index == Index.IndexType.NONE) {
 
-            Indexed indexed = AnnotationUtils.getAnnotation(field, Indexed.class);
+            org.neo4j.ogm.annotation.Index indexed = AnnotationUtils.getAnnotation(field, org.neo4j.ogm.annotation.Index.class);
             if (indexed != null) {
                 if (indexed.unique()) {
                     index = Index.IndexType.UNIQUE;
@@ -83,29 +96,23 @@ public class Neo4jSchemaGenerator extends BasicSchemaGenerator implements Annota
         String name = super.getPropertyName(field, rootEmbeddedField, schemaClass);
 
         // If annotated with @GraphProperty, use the propertyName parameter of the annotation
-        GraphProperty graphProperty = AnnotationUtils.getAnnotation(field, GraphProperty.class);
+        Property graphProperty = AnnotationUtils.getAnnotation(field, Property.class);
 
         if (graphProperty != null) {
-            if (!StringUtils.isEmpty(graphProperty.propertyName())) {
-                name = graphProperty.propertyName();
+            if (!StringUtils.isEmpty(graphProperty.name())) {
+                name = graphProperty.name();
             }
         } else {
-            RelatedTo relatedTo = AnnotationUtils.getAnnotation(field, RelatedTo.class);
+            Relationship relatedTo = AnnotationUtils.getAnnotation(field, Relationship.class);
             if (relatedTo != null) {
 
                 if (!StringUtils.isEmpty(relatedTo.type())) {
                     name = relatedTo.type();
                 }
-            } else {
-                RelatedToVia relatedToVia = AnnotationUtils.getAnnotation(field, RelatedToVia.class);
-                if (relatedToVia != null) {
-                    if (isAdjacentField(field.getType(), field)) {
-                        String adjacentName = getVertexName(field.getType());
-                        if (!adjacentName.equals(field.getType().getName())) {
-                            name = adjacentName;
-                        } else if (!StringUtils.isEmpty(relatedToVia.type())) {
-                            name = relatedToVia.type();
-                        }
+                if (isAdjacentField(field.getType(), field)) {
+                    String adjacentName = getVertexName(field.getType());
+                    if (!adjacentName.equals(field.getType().getName())) {
+                        name = adjacentName;
                     }
                 }
             }
@@ -120,7 +127,7 @@ public class Neo4jSchemaGenerator extends BasicSchemaGenerator implements Annota
 
             Annotation[] annotations = AnnotationUtils.getAnnotations(field);
             for (Annotation annotation : annotations) {
-                if (annotation instanceof RelatedTo) {// || annotation instanceof StartNode || annotation instanceof EndNode) {
+                if (annotation instanceof Relationship) {// || annotation instanceof StartNode || annotation instanceof EndNode) {
                     return true;
                 }
             }
@@ -137,7 +144,7 @@ public class Neo4jSchemaGenerator extends BasicSchemaGenerator implements Annota
 
             Annotation[] annotations = AnnotationUtils.getAnnotations(field);
             for (Annotation annotation : annotations) {
-                if (annotation instanceof RelatedToVia) {
+                if (annotation instanceof Relationship) {
                     return true;
                 }
             }
@@ -175,9 +182,9 @@ public class Neo4jSchemaGenerator extends BasicSchemaGenerator implements Annota
 
     @Override
     protected boolean isLinkOutward(Class<?> cls, Field field) {
-        RelatedTo relatedTo = AnnotationUtils.getAnnotation(field, RelatedTo.class);
+        Relationship relatedTo = AnnotationUtils.getAnnotation(field, Relationship.class);
         if (relatedTo != null) {
-            return relatedTo.direction() == Direction.OUTGOING;
+            return relatedTo.direction().equals(Relationship.OUTGOING);
         }
         StartNode startNode = AnnotationUtils.getAnnotation(field, StartNode.class);
         if (startNode != null) {
@@ -194,12 +201,12 @@ public class Neo4jSchemaGenerator extends BasicSchemaGenerator implements Annota
 
     @Override
     protected boolean isCollectionField(Class<?> cls, Field field, GremlinSchema schema) {
-        return super.isCollectionField(cls, field, schema) && AnnotationUtils.getAnnotation(field, RelatedTo.class) != null;
+        return super.isCollectionField(cls, field, schema) && AnnotationUtils.getAnnotation(field, Relationship.class) != null;
     }
 
     @Override
     protected boolean isCollectionViaField(Class<?> cls, Field field, GremlinSchema schema) {
-        return super.isCollectionViaField(cls, field, schema) && AnnotationUtils.getAnnotation(field, RelatedToVia.class) != null;
+        return super.isCollectionViaField(cls, field, schema) && AnnotationUtils.getAnnotation(field, Relationship.class) != null;
     }
     //    @Override
     //    protected boolean isLinkViaEdge(Class<?> cls, Field field) {

@@ -1,6 +1,6 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
-import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.NodeEntity;
 
 /**
  * @author <a href="mailto:andreas.berger@kiwigrid.com">Andreas Berger</a>

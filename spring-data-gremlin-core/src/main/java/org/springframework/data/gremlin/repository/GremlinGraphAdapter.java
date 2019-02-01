@@ -33,7 +33,9 @@ public class GremlinGraphAdapter<G extends Graph> {
 
     @Transactional(readOnly = false)
     public Vertex createVertex(G graph, String className) {
-        LOGGER.info("CREATING VERTEX: " + className);
+        if (LOGGER.isTraceEnabled()) { 
+        	LOGGER.trace("CREATING VERTEX: " + className);
+        }
         return graph.addVertex(className);
     }
 
@@ -117,7 +119,9 @@ public class GremlinGraphAdapter<G extends Graph> {
 
     @Transactional(readOnly = false)
     public Edge addEdge(Object o, Vertex outVertex, Vertex inVertex, String name) {
-        LOGGER.debug("Creating edge " + outVertex + " -> " + inVertex + "...");
+        if (LOGGER.isTraceEnabled()) { 
+        	LOGGER.trace("CREATING EDGE " + outVertex + " -" + name + "-> " + inVertex + "...");
+        }
         Edge edge = outVertex.addEdge(name, inVertex);
         return edge;
     }

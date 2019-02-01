@@ -1,9 +1,8 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
-import org.neo4j.graphdb.Direction;
-import org.springframework.data.neo4j.annotation.GraphId;
-import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Relationship;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,10 +19,10 @@ public class Address {
 
     private String street;
 
-    @RelatedTo(type = "of_area")
+    @Relationship(type = "of_area")
     private Area area;
 
-    @RelatedTo(type = "lives_at", direction = Direction.INCOMING)
+    @Relationship(type = "lives_at", direction = Relationship.INCOMING)
     private Set<Person> people;
 
     public Address() {}
