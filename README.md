@@ -198,7 +198,7 @@ public class Address {
 ```
 @Embeddable
 public class Country {
-	private String name;
+    private String name;
 }
 ```
 
@@ -381,9 +381,9 @@ public class Configuration {
 - ~~Lazy fetching~~
 - Index for multiple properties
 - Allow for IDs other than String
-- Repository definitions using ~~[Neo4j](http://docs.spring.io/spring-data/neo4j/docs/current/reference/html/#reference_programming-model_annotations)~~, [Frames](http://frames.tinkerpop.com) or ~~some other custom implementation~~.
-- More [Blueprints](https://github.com/tinkerpop/blueprints/wiki) implementations ([Neo4j](https://en.wikipedia.org/wiki/Neo4j), [ArangoDB](https://www.arangodb.com), [Blazegraph](http://www.blazegraph.com/bigdata), etc.)
-- Migrate to [Tinkerpop 3.0](http://www.tinkerpop.com/docs/3.0.0.M1/)
+- Repository definitions using ~~[Neo4j](http://docs.spring.io/spring-data/neo4j/docs/current/reference/html/#reference_programming-model_annotations)~~ or ~~some other custom implementation~~.
+- More [Tinkerpop](http://tinkerpop.apache.org/) implementations ([Neo4j](https://en.wikipedia.org/wiki/Neo4j), [ArangoDB](https://www.arangodb.com), [Blazegraph](https://blazegraph.com/), etc.)
+- ~~Migrate to [Tinkerpop 3.0](http://tinkerpop.apache.org/docs/3.4.6/)~~
 
 ##Acknowledgement
 This project would not have been possible without the hard work done by the [spring-data-orientdb](https://github.com/orientechnologies/spring-data-orientdb) team. A lot of code and concepts were reused and reshaped. Thanks.
