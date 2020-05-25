@@ -37,9 +37,9 @@ public class TestService {
         Person test = new Person("Graham", "Webber", address, true);
         repository.save(test);
         repository.findByAddress_Area_Name("asdf");
-        repository.queryLastName("asdf", new PageRequest(0, 2));
+        repository.queryLastName("asdf", PageRequest.of(0, 2));
         if (nativePersonRepository != null) {
-            nativePersonRepository.findNear(-33d, 151d, 50, new PageRequest(0, 2));
+            nativePersonRepository.findNear(-33d, 151d, 50, PageRequest.of(0, 2));
         }
         addressRepository.save(address);
         throw new IllegalStateException();

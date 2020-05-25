@@ -1,6 +1,6 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.Relationship;
 import org.springframework.data.gremlin.annotation.LinkVia;
 
@@ -24,7 +24,7 @@ public class Person {
         SPACESHIP
     }
 
-    @GraphId
+    @Id
     private String id;
 
     private String firstName;

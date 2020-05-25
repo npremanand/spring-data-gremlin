@@ -1,7 +1,7 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
 import org.springframework.data.gremlin.annotation.Index;
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
 
 import static org.springframework.data.gremlin.annotation.Index.IndexType.SPATIAL_LATITUDE;
@@ -13,7 +13,7 @@ import static org.springframework.data.gremlin.annotation.Index.IndexType.SPATIA
 @NodeEntity
 public class Location {
 
-    @GraphId
+    @Id
     private String id;
 
     @Index(type = SPATIAL_LATITUDE)

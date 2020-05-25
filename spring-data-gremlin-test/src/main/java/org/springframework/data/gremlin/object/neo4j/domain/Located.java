@@ -10,7 +10,7 @@ import java.util.Date;
 @RelationshipEntity(type = "was_located")
 public class Located {
 
-    @GraphId
+    @Id
     private String id;
 
     @Property(name = "location_date")

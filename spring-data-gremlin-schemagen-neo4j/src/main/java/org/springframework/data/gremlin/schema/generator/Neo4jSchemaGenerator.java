@@ -7,7 +7,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.gremlin.annotation.Index;
 import org.springframework.data.gremlin.schema.GremlinSchema;
 import org.neo4j.ogm.annotation.EndNode;
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.RelationshipEntity;
@@ -55,7 +55,7 @@ public class Neo4jSchemaGenerator extends BasicSchemaGenerator implements Annota
                 if (id != null) {
                     idFields[0] = field;
                 } else {
-	                GraphId graphid = AnnotationUtils.getAnnotation(field, GraphId.class);
+	                Id graphid = AnnotationUtils.getAnnotation(field, Id.class);
 	                if (graphid != null) {
 	                    idFields[0] = field;
 	                }

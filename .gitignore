@@ -8,3 +8,6 @@ build
 .classpath
 .factorypath
 .project
+
+# For VSCode
+.vscode/

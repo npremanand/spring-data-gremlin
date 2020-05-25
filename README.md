@@ -1,18 +1,18 @@
 # Spring Data Tinkerpop
 
-Spring data tinkerpop makes it easier to implement Graph based repositories. This module extends [Spring Data](http://projects.spring.io/spring-data) to allow support for potentially any [Graph database](https://en.wikipedia.org/wiki/Graph_database) that implements the [Tinkerpop Blueprints 2.x API](https://github.com/tinkerpop/blueprints/wiki). 
+Spring data tinkerpop makes it easier to implement Graph based repositories. This module extends [Spring Data](http://projects.spring.io/spring-data) to allow support for potentially any [Graph database](https://en.wikipedia.org/wiki/Graph_database) that implements the [Tinkerpop Blueprints 3.x API](https://tinkerpop.apache.org/docs/current/). 
 
 ## Features
 
 - All the great features of [Spring Data](http://projects.spring.io/spring-data)
 - Support for [OrientDB](http://orientdb.com) and [JanusGraph](http://janusgraph.org) out of the box
 - Schema creation in supported databases
-- Support to build repositories based on Spring using our [custom set of annotations](https://github.com/gjrwebber/org/springframework/data/gremlin/annotation), [spring-data-neo4j](http://docs.spring.io/spring-data/neo4j/docs/current/reference/html/#reference_programming-model_annotations) or JPA annotations.
+- Support to build repositories based on Spring using our [custom set of annotations](https://github.com/gjrwebber/spring-data-gremlin/tree/develop/spring-data-gremlin-core/src/main/java/org/springframework/data/gremlin/annotation), [spring-data-neo4j](http://docs.spring.io/spring-data/neo4j/docs/current/reference/html/#reference_programming-model_annotations) or JPA annotations.
 - Vertex and Edge repository support
 - Pagination support
 - Unique, non-unique and spatial indices supported
-- Support for [Gremlin query language](http://gremlin.tinkerpop.com/) through the ```@Query``` annotation
-- Support for native queries (Eg. [OrientDB SQL](http://orientdb.com/docs/2.0/orientdb.wiki/SQL-Query.html)) through the ```@Query``` annotation
+- Support for [Gremlin query language](http://tinkerpop.apache.org/gremlin.html) through the ```@Query``` annotation
+- Support for native queries (Eg. [OrientDB SQL](http://orientdb.com/docs/3.0.x/sql/SQL-Query.html)) through the ```@Query``` annotation
 - JavaConfig based repository configuration by introducing @EnableGremlinRepositories
 - ```Map``` and ```CompositeResult``` query result objects
 - ORM support for java.io.Serializable and arbitrary classes as JSON
@@ -46,7 +46,7 @@ Below is a list of supported annotations used by the ```Neo4jSchemaGenerator```.
 
 - ```@NodeEntity``` maps an ```Object``` to a ```Vertex```
 - ```@RelationshipEntity``` maps an ```Object``` to an ```Edge```
-- ```@GraphId``` maps an instance variable to the vertex or edge ID
+- ```@Id``` maps an instance variable to the vertex or edge ID
 - ```@Indexed``` used for indexing properties
 - ```@GraphProperty``` maps an instance variable to a vertex property (optional, only required if you want to name it differently)
 - ```@RelatedTo``` creates a link from this vertex to the referenced ```Object```'s vertex or ```Collection```'s verticies using the name of the field as default or the optional ```type``` parameter as the link label

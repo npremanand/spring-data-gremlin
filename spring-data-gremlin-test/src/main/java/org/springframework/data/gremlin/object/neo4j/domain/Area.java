@@ -1,12 +1,12 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
 
 @NodeEntity
 public class Area {
 
-    @GraphId
+    @Id
     private String id;
 
     private String name;

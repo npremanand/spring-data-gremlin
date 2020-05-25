@@ -1,7 +1,7 @@
 package org.springframework.data.gremlin.object.neo4j.domain;
 
 import org.neo4j.ogm.annotation.EndNode;
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.RelationshipEntity;
 import org.neo4j.ogm.annotation.StartNode;
 
@@ -13,7 +13,7 @@ import java.util.Date;
 @RelationshipEntity
 public class Likes {
 
-    @GraphId
+    @Id
     private String id;
 
     private Date date = new Date();

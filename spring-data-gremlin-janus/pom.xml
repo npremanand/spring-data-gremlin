@@ -20,8 +20,13 @@
 		<dependency>
 			<groupId>org.janusgraph</groupId>
 			<artifactId>janusgraph-core</artifactId>
-			<version>0.3.1</version>
+			<version>0.5.2</version>
 		</dependency>
+    <dependency>
+			<groupId>org.janusgraph</groupId>
+			<artifactId>janusgraph-inmemory</artifactId>
+			<version>0.5.2</version>
+    </dependency>
 		<dependency>
 			<groupId>com.github.jespersm.spring-data-gremlin</groupId>
 			<artifactId>spring-data-gremlin-test</artifactId>

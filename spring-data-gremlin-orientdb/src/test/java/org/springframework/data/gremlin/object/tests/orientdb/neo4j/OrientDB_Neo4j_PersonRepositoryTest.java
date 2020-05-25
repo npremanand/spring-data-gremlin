@@ -38,7 +38,7 @@ public class OrientDB_Neo4j_PersonRepositoryTest extends AbstractPersonRepositor
 
     @Test
     public void findPeopleNear() throws Exception {
-        Page<Person> page = nativePersonRepository.findNear(-33, 151, 50, new PageRequest(0, 10));
+        Page<Person> page = nativePersonRepository.findNear(-33, 151, 50, PageRequest.of(0, 10));
         Assert.assertEquals(1, page.getTotalElements());
 
         Person person = page.iterator().next();
